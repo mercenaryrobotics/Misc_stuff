@@ -1,0 +1,87 @@
+Wireless Android studio setup
+https://blog.jcole.us/2017/04/13/wireless-programming-for-ftc-robots/
+
+
+
+https://gm0.org/en/latest/docs/software/vision.html
+https://www.reddit.com/r/FTC/comments/qguhyq/opencv_help/
+https://www.reddit.com/r/FTC/comments/q7b68l/opencv_detection_example/?utm_medium=android_app&utm_source=share
+https://github.com/PinkToTheFuture/OpenCV_FreightFrenzy_2021-2022/
+https://acmerobotics.github.io/ftc-dashboard/
+
+https://www.reddit.com/r/FTC/comments/qe7ju0/how_to_connect_the_webcams_display_to_the_driver/
+https://www.reddit.com/r/FTC/comments/q9knh0/video_transmission/
+https://github.com/acmerobotics/ftc-dashboard/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/VuforiaStreamOpMode.java
+https://github.com/FIRST-Tech-Challenge/FtcRobotController/tree/master/FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/samples
+
+
+https://www.reddit.com/r/FTC/comments/qgmqw9/webcam_training_problems/
+
+https://www.reddit.com/r/FTC/comments/pu2p7u/freight_frenzytflite/
+
+https://www.reddit.com/r/FTC/comments/pvfexp/doubt/
+
+https://www.reddit.com/r/FTC/comments/q2b2jm/creating_a_tflite_file_tensorflow_and_custom/
+
+https://github.com/ftctechnh/FtcRobotController/wiki/Using-a-TensorFlow-Pretrained-Model-to-Detect-Everyday-Objects
+
+
+https://www.reddit.com/r/FTC/comments/pulz3o/how_do_i_detect_a_custom_object_using_tensor_flow/
+
+https://www.reddit.com/r/FTC/comments/pywy34/vuforia_vs_tensorflow/
+https://www.reddit.com/r/FTC/comments/pvvhmt/vuforia_v_tensorflow_v_opencv/
+
+
+EasyOpenCV
+https://github.com/OpenFTC/EasyOpenCV/tree/master#documentation
+https://drive.google.com/file/d/1ie9Z49tU211PGUYVi1Cw3X8oUp1pyxyO/view
+https://www.reddit.com/r/FTC/comments/pw2e78/help_a_nonsoftware_coach_help_the_kids_with/
+
+https://github.com/FIRST-Tech-Challenge/FtcRobotController/blob/master/FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/samples/SensorREV2mDistance.java
+
+https://www.reddit.com/r/FTC/comments/pw7zhg/freight_frenzy_released_for_xrc_simulator/
+Or, Autodesk Synthesis
+
+FTC Roadrunner
+https://www.reddit.com/r/FTC/comments/pryl9p/why_is_roadrunner_hated_on/
+https://learnroadrunner.com/#frequently-asked-questions
+
+FTCLib
+https://docs.ftclib.org/ftclib/
+https://github.com/FTCLib/FTCLib/tree/v2.0.1
+
+Libraries
+FTCSim
+https://www.youtube.com/watch?v=lwZUXa7Wgbs
+Titan Robotics
+https://github.com/trc492/FtcTemplate
+
+2022 Tensorflow
+https://ftc-docs.firstinspires.org/programming_resources/vision/tensorflow_pp_2022/tensorflow_pp_2022.html
+
+Mecanum notes
+Straf adjustment
+https://www.desmos.com/calculator/jbcseepob3
+Math papers
+https://www.chiefdelphi.com/t/paper-mecanum-and-omni-kinematic-and-force-analysis/106153
+Examples
+https://ftcforum.firstinspires.org/forum/ftc-technology/android-studio/6361-mecanum-wheels-drive-code-example
+https://compendium.readthedocs.io/en/latest/tasks/drivetrains/mecanum.html
+https://www.ctrlaltftc.com/practical-examples/drivetrain-control
+
+Camera info
+https://github.com/FIRST-Tech-Challenge/SkyStone/wiki/Using-an-External-Webcam-with-Control-Hub
+
+==============================================================
+Install OpenCV with instructions from here...
+https://github.com/OpenFTC/EasyOpenCV
+
+Then follow instructions here...
+https://github.com/OpenFTC/EOCV-AprilTag-Plugin
+
+PDF with April tags is here...
+https://www.dotproduct3d.com/uploads/8/5/1/1/85115558/apriltags1-20.pdf
+Images here...
+https://github.com/AprilRobotics/apriltag-imgs/tree/master/tag36h11
+Demo code here...
+https://github.com/OpenFTC/EOCV-AprilTag-Plugin/tree/master/examples/src/main/java/org/firstinspires/ftc/teamcode
