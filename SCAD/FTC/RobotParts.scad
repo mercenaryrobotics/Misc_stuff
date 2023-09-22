@@ -20,6 +20,7 @@ $M4ThreadlockNutDiameterFlat = 6.4;
 $M4ThreadlockNutDiameterRound = 7.9;
 $M4ThreadlockNutHeight = 4.8;
 $M4NonThreadedD = 4.3;
+$M4ThreadedD = 4.1;
 $CChannelThickness = 2.4;
 
 $ChannelSpacing = 40;
@@ -134,11 +135,11 @@ $GrabberAngle = 20;
 //Drone launcher
 $DroneLauncherRailW = 12.1;
 $DroneLauncherRailL = 300;
-$DroneLauncherL = 120;
+$DroneLauncherL = 170;
 $DroneLauncherRailThickness = 1.5;
 $DroneLauncherRailClearance = .4;
-$DroneLauncherCarriageClearance = .5;
-$DroneLauncherExtensionCutout = 60;
+$DroneLauncherCarriageClearance = .6;
+$DroneLauncherExtensionCutout = 110;
  
 
 $PixelFloorPickerO1UpperHullLocations = [[($RollerDiameter / 2) + $PlateThickness + 40, 22, 0], 
@@ -3911,15 +3912,9 @@ module DroneLauncherCarriage()
 {
   difference()
   {
-    union()
-    {
-      //Core
-      translate([($DroneLauncherL / 2), 0, 7])
-        cube([$DroneLauncherL - 0.1, 40, 30], center = true);
-      //Launch release
-      translate([$DroneLauncherL, -5, 8])
-        cube([10, 10, 7]);
-    }
+    //Core
+    translate([($DroneLauncherL / 2), 0, 4])
+      cube([$DroneLauncherL - 0.1, 40, 35], center = true);
     //Drone cutout
     translate([($DroneLauncherL / 2) - 2, 0, 23])
       cube([$DroneLauncherL - 0.1, 35, 30], center = true);
@@ -3927,89 +3922,109 @@ module DroneLauncherCarriage()
     translate([$DroneLauncherExtensionCutout / 2, 0, -9.5])
       cube([$DroneLauncherExtensionCutout, 45, 30], center = true);
     //Elastic hook holes
-    translate([$DroneLauncherExtensionCutout + 15, 10, -(30 / 2) + 2])
-        cylinder(d = 3, h = 12);
-    translate([$DroneLauncherExtensionCutout + 15, -10, -(30 / 2) + 2])
+    translate([$DroneLauncherExtensionCutout + 50, 10, -34.5 + 15])
+        cylinder(d = 3, h = 20);
+    translate([$DroneLauncherExtensionCutout + 50, -10,  -34.5 + 15])
         cylinder(d = 3, h = 12);
     //Launch release
     translate([$DroneLauncherL, -6, 12])
       cube([7, 12, 10]);
     //Rail slider
-    translate([$DroneLauncherL / 2, 0, 0])
+    translate([$DroneLauncherL / 2, 0, -1])
       cube([$DroneLauncherL, $DroneLauncherRailW + $DroneLauncherCarriageClearance, $DroneLauncherRailW + $DroneLauncherCarriageClearance], center = true);
   }
+  //Inside guides
+  difference()
+  {
+    translate([($DroneLauncherL / 2), 0, 9])
+      cube([$DroneLauncherL - 0.1, 10, 5], center = true);
+    translate([($DroneLauncherL / 2), 0, 15])
+    rotate(45, [1, 0, 0])
+      cube([$DroneLauncherL, 10, 10], center = true);
+
+  }
+  
 }
  
-module DroneLauncherCap(AddLowerHole = 0, AddUpperHole = 0)
+module DroneLauncherCap()
 {
   difference()
   {
-    translate([0, 0, -5 - (AddLowerHole * 5) + (AddUpperHole * 5)])
-      cube([10, $DroneLauncherRailW + 6, $DroneLauncherRailW + 10 + (AddLowerHole * 10) + (AddUpperHole * 10) - 1], center = true);
-    translate([0, 0, (AddUpperHole * 5)])
-      cube([10.2, $DroneLauncherRailW + $DroneLauncherRailClearance, $DroneLauncherRailW + $DroneLauncherRailClearance + (AddUpperHole * 10)], center = true);
-    rotate(90, [1, 0, 0])
-      cylinder(d = 3.3, h = 20, center = true);
-    translate([0, 0, -10])
+    //Core
+    translate([5, 0, 5])
+      cube([20, $DroneLauncherRailW + 12, $DroneLauncherRailW + 25], center = true);
+    //Channel opening
+    translate([0, 0, 0])
+      cube([10.2, $DroneLauncherRailW + $DroneLauncherRailClearance, $DroneLauncherRailW + $DroneLauncherRailClearance], center = true);
+    //Channel mount mole
+    translate([5 - 4.5, 0, 6 - 4])
       rotate(90, [1, 0, 0])
-        cylinder(d = 3.3, h = 20, center = true);
-    translate([0, 0, -20])
+        cylinder(d = $M4ThreadedD, h = 40, center = true);
+    //Latch pivot hole    
+    translate([8, 0, 19])
       rotate(90, [1, 0, 0])
-        cylinder(d = 3.3, h = 20, center = true);
-    translate([0, 0, 10])
+        cylinder(d = $M4ThreadedD, h = 40, center = true);
+    //Mount hole
+    translate([8, 0, 0])
       rotate(90, [1, 0, 0])
-        cylinder(d = 3.3, h = 20, center = true);
+        cylinder(d = $M4ThreadedD, h = 40, center = true);
+    //Latch cutout
+    translate([5, 0, 19])
+      cube([21, 6, 20], center = true);
   }
 }
  
 module DroneLauncharTrigger()
 {
   rotate(90, [1, 0, 0])
-  difference()
-  {
-    linear_extrude(height = 3,  center = true, convexity = 10, twist = 0)
-      polygon([[-3, 5], [-13, 14], [-20, 14], [-19, 11], [-23, 11], [-23, 18],[-5, 18],[5, 12],[20, 12],[20, 5]]);
-    translate([0, 10, 0])
-      cylinder(d = 3.5, h = 20, center = true);
-  }
+    difference()
+    {
+      linear_extrude(height = 5,  center = true, convexity = 10, twist = 0)
+        polygon([[-3, 5], [-13, 14], [-20, 14], [-19, 11], [-23, 11], [-25, 19],[-5, 19],[5, 12],[25, 12],[25, 5]]);
+      translate([0, 10, 0])
+        cylinder(d = $M4NonThreadedD, h = 20, center = true);
+    }
 }
  
-module DroneLauncharFrontCap()
+module DroneLauncherFrontCap()
 {
-  difference()
-  {
-    DroneLauncherCap(AddLowerHole = 1);
-    translate([0, 0, -10])
-      rotate(90, [0, 1, 0])
-        cylinder(d = 3, h = 20, center = true);
-  }
+  rotate(180, [0, 0, 1])
+    difference()
+    {
+      DroneLauncherCap();
+      translate([0, 0, 15])
+        cube([50, 50, 20], center = true);
+    }
 }
 
 module DroneLauncher()
 {
   color("lightgray")
     DroneLauncherRailProfile(Width = $DroneLauncherRailW, Height = $DroneLauncherRailW, Thickness = $DroneLauncherRailThickness, Length = $DroneLauncherRailL);
+  //Rear cap
   translate([$DroneLauncherRailL - 5, 0, 0])
-    DroneLauncherCap(AddUpperHole = 1);
-  translate([5, 0, 0])
-    DroneLauncharFrontCap();
-  translate([150, 0, 0])
+    DroneLauncherCap();
+  //Front cap
+  translate([0, 0, 0])
+    DroneLauncherFrontCap();
+  //Launch carriage
+  translate([117, 0, 1])
     DroneLauncherCarriage();
-  translate([$DroneLauncherRailL - 5, 0, 0])
+  //Trigger
+  translate([$DroneLauncherRailL + 3, 0, 9])
     DroneLauncharTrigger();
 }
 
 module DroneLauncherPrint()
 {
-  translate([0, 0, 5])
+  translate([100, 10, 15])
     rotate(90, [0, 1, 0])
-      DroneLauncherCap(AddUpperHole = 1);
-  translate([10, 20, 5])
-    rotate(90, [0, 1, 0])
-      DroneLauncharFrontCap();
-  translate([-15, 50, 8])
+      DroneLauncherCap();
+  translate([10, 10, 13.5])
+    DroneLauncherFrontCap();
+  translate([-15, 50, 13.5])
     DroneLauncherCarriage();
-  translate([50, 20, 1.5])
+  translate([50, 20, 2.5])
     rotate(90, [1, 0, 0])
       DroneLauncharTrigger();
 }
@@ -4180,8 +4195,8 @@ RobotArm();
 //PixelFloorPickerO1Plate(m = 1, HullBounds = $PixelFloorPickerO1UpperHullLocations, Holes = $PixelFloorPickerO1UpperHoleLocations, Bearings = $PixelFloorPickerO1UpperBearingLocations);
 //Lower guides
 //PixelFloorPickerO1PlateLower(m = 0, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
-PixelFloorPickerO1PlateLower(m = 1, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
+//PixelFloorPickerO1PlateLower(m = 1, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
 //Roller plug
 //PixelFloorPickerO1RollerPlug();
 //DroneLauncher();
-//DroneLauncherPrint();
+DroneLauncherPrint();
