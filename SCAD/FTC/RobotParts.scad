@@ -107,13 +107,14 @@ $ClawPivotOffset = 5;
 //$PixelFloorPickerO1ShaftDSnug = 6.1;//Aluminum 6mm shaft
 $PixelFloorPickerO1ShaftDSnug = 8.6;//Steel 8mm shaft
 //$BearingDiameter = 10.06;
-$BearingDiameter = 16.09;
+//$BearingDiameter = 16.09;
+$BearingDiameter = 14.09;
 $BearingDepth = 5.3;
 $PlateThickness = 5;
 $RollerDiameter = 22;
 $RearRollerAdder = 5;
 $RearRollerSpacing = $RollerDiameter + (0.5 * $Inch2mm) + $RearRollerAdder;
-$PixelFloorPickerO1UpperPlateSpacing = 150;
+$PixelFloorPickerO1UpperPlateSpacing = 110;
 $PixelFloorPickerO1UpperRollerLength = $PixelFloorPickerO1UpperPlateSpacing - $PlateThickness - 1;
 $PixelFloorPickerO1LowerPlateSpacing = $PixelFloorPickerO1UpperPlateSpacing + $PlateThickness + $PlateThickness + 1;
 $PixelFloorPickerO1LowerRollerLength = $PixelFloorPickerO1LowerPlateSpacing - $PlateThickness - 1;
@@ -130,7 +131,9 @@ $RotationVOffset = 3;
 $ArmLength = 17.9 * $Inch2mm;
 $ArmAngleIdle = 44.7;
 $ArmAngle = 0;
-$GrabberAngle = 20;
+$GrabberAngle = 25;
+
+$PixelFloorPickerO1MountBlockRotation = 20;
 
 //Drone launcher
 $DroneLauncherRailW = 12.1;
@@ -192,10 +195,8 @@ $PixelFloorPickerO1LowerHoleLocations = [//Bottom front guide
                                          [$PixelFloorPickerO1LowerBearingLocations[1][0] - 1, ($RollerDiameter / 2) + 30 + $PixelFloorPickerO1LowerBearingLocations[1][1] + 63, 0],
                                          [$PixelFloorPickerO1LowerBearingLocations[1][0] - 1, ($RollerDiameter / 2) + 30 + $PixelFloorPickerO1LowerBearingLocations[1][1] + 42 + 63 - $PixelFloorPickerO1GuideBaseThickness, 0],
                                          //Upper rear guide
-                                         [$PixelFloorPickerO1LowerBearingLocations[1][0] - 1 + 25, ($RollerDiameter / 2) + 30 + $PixelFloorPickerO1LowerBearingLocations[1][1] + 63, 0],
-                                         [$PixelFloorPickerO1LowerBearingLocations[1][0] - 1 + 25, ($RollerDiameter / 2) + 30 + $PixelFloorPickerO1LowerBearingLocations[1][1] + 42 + 63 - $PixelFloorPickerO1GuideBaseThickness, 0],
-                                         //Rotation shaft
-                                         [($RollerDiameter / 2) + $RotationVOffset, $PixelFloorPickerO1MidOffset + $RotationHOffset, 0]
+//                                         //Rotation shaft
+//                                         [($RollerDiameter / 2) + $RotationVOffset, $PixelFloorPickerO1MidOffset + $RotationHOffset, 0]
 
                                         ];
 
@@ -3435,10 +3436,10 @@ module PixelFloorPickerO1BeltGuide(width, length, channels, mounts, margin, hole
     {
       translate([width / 2, ($PixelFloorPickerO1GuideBaseThickness / 2) + (i * $MountHoleSpacing), ($PixelFloorPickerO1GuideBaseThickness / 2) + $PixelFloorPickerO1GuideVOffset])
         rotate(-90, [0, 1, 0])
-          cylinder(d = 4, h = 10);
+          cylinder(d = holed, h = 20);
       translate([-width / 2, ($PixelFloorPickerO1GuideBaseThickness / 2) + (i * $MountHoleSpacing), ($PixelFloorPickerO1GuideBaseThickness / 2) + $PixelFloorPickerO1GuideVOffset])
         rotate(90, [0, 1, 0])
-          cylinder(d = holed, h = 10);
+          cylinder(d = holed, h = 20);
     }
   }
   
@@ -3456,9 +3457,9 @@ module PixelFloorPickerO1BeltGuide(width, length, channels, mounts, margin, hole
   */
 }
 
-module PixelFloorPickerO1UpperGuideSection()
+module PixelFloorPickerO1UpperGuideSection(channels = 8)
 {
-  PixelFloorPickerO1BeltGuide(width = $PixelFloorPickerO1UpperPlateSpacing - $PlateThickness, length = 42, channels = 8, mounts = 2, margin = 14);
+  PixelFloorPickerO1BeltGuide(width = $PixelFloorPickerO1UpperPlateSpacing - $PlateThickness, length = 42, channels = channels, mounts = 2, margin = 14);
 }
 
 module PixelFloorPickerO1LowerGuideSection()
@@ -3556,44 +3557,111 @@ module PixelFloorPickerO1Upper()
   
 }
 
-module PixelFloorPickerO1PlateLower(m, HullBounds, Holes, Bearings)
+module PixelFloorPickerO1MountBlockHoles(d = $M4ThreadedD, h = 30)
 {
-  difference()
+  //Plate mount holes
+  translate([-4, 4, -1])
+    cylinder(d = d, h = h);
+  translate([-4 - 32, 4, -1])
+    cylinder(d = d, h = h);
+  translate([-4, 4 + 64, -1])
+    cylinder(d = d, h = h);
+  translate([-4 - 32, 4 + 64, -1])
+    cylinder(d = d, h = h);
+}
+
+module PixelFloorPickerO1MountBlock()
+{
+  translate([0, -72 / 2, -40 / 2])
   {
-    union()
+    difference()
     {
-      PixelFloorPickerO1Plate(m, HullBounds, Holes, Bearings);
-      //Rotation hub
-      mirror([m, 0, 0])
-        translate([$PixelFloorPickerO1SpindleHeight + ($PlateThickness / 2), 0, 0])
-        {
-          rotate(-90, [0, 1, 0])
-            translate($PixelFloorPickerO1LowerHoleLocations[6])
-            {
-              cylinder(d = 34, h = 10);
-              translate([0, 0, -10])
-                rotate(90, [0, 0, 1])
-                  SpindleCore(InnerD = 30, OuterD = 34, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 0, ShaftFaces = 6, ThreadD = 3);
-            }
-        }
-    }
-    translate([0, 0, ($PixelFloorPickerO1SpindleHeight + ($PlateThickness / 2))])
-      translate($PixelFloorPickerO1LowerHoleLocations[6])
-        rotate(-90, [0, 1, 0])
-          cylinder(d = $PixelFloorPickerO1ShaftDSnug, h = 100, $fn = 6, center = true); 
-    translate([0, 135, 210])
+      cube([11, 72, 40]);
       rotate(90, [0, 1, 0])
-        cylinder(d = 350, h = 10, center = true);
+      {
+        PixelFloorPickerO1MountBlockHoles();
+        //Bearing nut holes
+        translate([-4, 4 + 16, 4])
+          cylinder(d = 8.5, h = 8);
+        translate([-4 - 32 + 8, 4 + 16, 4])
+          cylinder(d = 8.5, h = 8);
+        translate([-4, 4 + 64 - 16, 4])
+          cylinder(d = 8.5, h = 8);
+        translate([-4 - 32 + 8, 4 + 64 - 16, 4])
+          cylinder(d = 8.5, h = 8);
+      }
+    }
+//    translate([16, 130, 16])
+//    cube([10, 200, 18], center = true);
   }
 }
 
-module PixelFloorPickerO1Lower()
+module PixelFloorPickerO1PlateLower(mount, m, HullBounds, Holes, Bearings)
+{
+  mirror([m, 0, 0])
+    {
+    difference()
+    {
+      union()
+      {
+        PixelFloorPickerO1Plate(0, HullBounds, Holes, Bearings);
+        if (mount == 1)
+        {
+          translate([($PlateThickness / 2), 180, 20])
+            rotate($PixelFloorPickerO1MountBlockRotation, [1, 0, 0])
+              PixelFloorPickerO1MountBlock();
+        }
+        else if (mount == 2)
+        {
+          //Rotation hub
+            translate([$PixelFloorPickerO1SpindleHeight + ($PlateThickness / 2), 0, 0])
+            {
+              rotate(-90, [0, 1, 0])
+                translate($PixelFloorPickerO1LowerHoleLocations[6])
+                {
+                  cylinder(d = 34, h = 10);
+                  translate([0, 0, -10])
+                    rotate(90, [0, 0, 1])
+                      SpindleCore(InnerD = 30, OuterD = 34, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 0, ShaftFaces = 6, ThreadD = 3);
+                }
+            }
+          }
+      }
+      if (mount == 1)
+      {
+        translate([10, 0, 0])
+          rotate(-90, [0, 1, 0])
+            PixelFloorPickerO1PlateHoles(8, $PlateThickness + 10, Holes);
+        translate([-7, 153, -11.1])
+          rotate($PixelFloorPickerO1MountBlockRotation, [1, 0, 0])
+            rotate(90, [0, 1, 0])
+            {
+              PixelFloorPickerO1MountBlockHoles();
+              translate([0, 0, $PlateThickness])
+                PixelFloorPickerO1MountBlockHoles(d = 8, h = $PlateThickness);
+            }
+      }
+      else if (mount == 2)
+        translate([0, 0, ($PixelFloorPickerO1SpindleHeight + ($PlateThickness / 2))])
+          translate($PixelFloorPickerO1LowerHoleLocations[6])
+            rotate(-90, [0, 1, 0])
+              cylinder(d = $PixelFloorPickerO1ShaftDSnug, h = 100, $fn = 6, center = true); 
+      
+      //Upper plate clearance cutout
+      translate([0, 112, 230])
+        rotate(90, [0, 1, 0])
+          cylinder(d = 400, h = 10, center = true);
+    }
+  }
+}
+
+module PixelFloorPickerO1Lower(mount)
 {
   //Lower side plates
   translate([$PixelFloorPickerO1LowerPlateSpacing / 2, 0, 0])
-    PixelFloorPickerO1PlateLower(m = 0, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
+    PixelFloorPickerO1PlateLower(mount = mount, m = 0, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
   translate([-$PixelFloorPickerO1LowerPlateSpacing / 2, 0, 0])
-    PixelFloorPickerO1PlateLower(m = 1, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
+    PixelFloorPickerO1PlateLower(mount = mount, m = 1, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
  
   //Lower rollers
   rotate(-90, [0, 1, 0])
@@ -3604,27 +3672,27 @@ module PixelFloorPickerO1Lower()
   
 }
  
-module PixelFloorPickerO1()
+module PixelFloorPickerO1(mount)
 { 
   //Upper components
 //  color("Red", 0.7)
     PixelFloorPickerO1Upper();
   //Lower components
 //  color("Blue", 0.7)
-    PixelFloorPickerO1Lower();
+    PixelFloorPickerO1Lower(mount = mount);
   
   //Roller drive gears
   PixelFloorPickerO1DriveGears();
 
 }
  
-module PixelFloorPickerO1Subsystem()
+module PixelFloorPickerO1Subsystem(mount)
 { 
   RotateAbout(0, (16 * $Inch2mm) + 10, ((12 + 1) * $Inch2mm) - 10, -$ArmAngle)
   {
     RotateAbout(0, $PixelFloorPickerO1MidOffset + $RotationHOffset, ($RollerDiameter / 2), $GrabberAngle + $ArmAngle + ($ArmAngle / 10))
     {
-      PixelFloorPickerO1();
+      PixelFloorPickerO1(mount);
     }
   }
   //Arm
@@ -4163,15 +4231,12 @@ RobotArm();
 //translate([0, 40, 0])
 //  Pixel("GREEN");
 
-//PixelFloorPickerO1Subsystem();
-//PixelFloorPickerO1();
-//PixelFloorPickerO1Lower();
+//PixelFloorPickerO1Subsystem(mount = 1);
+//PixelFloorPickerO1(mount = 1);
+//PixelFloorPickerO1Lower(mount = 1);
 //PixelFloorPickerO1Upper();
-//    PixelFloorPickerO1UpperPlate(m = 0);
-
-//    PixelFloorPickerO1LowerPlate(m = 0);
-//    PixelFloorPickerO1UpperPlate(m = 1);
-//    PixelFloorPickerO1LowerPlate(m = 1);
+//?    PixelFloorPickerO1LowerPlate(m = 0);
+//?    PixelFloorPickerO1LowerPlate(m = 1);
 
 //OdometryPod();
 
@@ -4187,16 +4252,26 @@ RobotArm();
 //PixelFloorPickerO1DriveGearMotor(Render = 2);
 
 //Guide spacer and band guides
-//PixelFloorPickerO1UpperGuideSection();
+//PixelFloorPickerO1UpperGuideSection(channels = 7);
 //Guide spacer (allows using same guides for upper and lower carriages)
 //PixelFloorPickerO1BeltGuide(width = $PlateThickness + .5, length = 42, channels = 2, mounts = 2, margin = 14, holed = $M4NonThreadedD);
-//Upper guides
+//Upper rail plates
 //PixelFloorPickerO1PlateDrive(m = 0, HullBounds = $PixelFloorPickerO1UpperHullLocationsDrive, Holes = $PixelFloorPickerO1UpperHoleLocations, Bearings = $PixelFloorPickerO1UpperBearingLocations);
 //PixelFloorPickerO1Plate(m = 1, HullBounds = $PixelFloorPickerO1UpperHullLocations, Holes = $PixelFloorPickerO1UpperHoleLocations, Bearings = $PixelFloorPickerO1UpperBearingLocations);
 //Lower guides
-//PixelFloorPickerO1PlateLower(m = 0, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
-//PixelFloorPickerO1PlateLower(m = 1, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
+
+//PixelFloorPickerO1PlateLower(mount = 1, m = 0, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
+
+//PixelFloorPickerO1PlateLower(mount = 1, m = 1, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
 //Roller plug
 //PixelFloorPickerO1RollerPlug();
 //DroneLauncher();
-DroneLauncherPrint();
+//DroneLauncherPrint();
+
+
+
+
+//  translate([$PixelFloorPickerO1LowerPlateSpacing / 2, 0, 0])
+//    PixelFloorPickerO1PlateLower(mount = 1, m = 0, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
+//  translate([-$PixelFloorPickerO1LowerPlateSpacing / 2, 0, 0])
+    PixelFloorPickerO1PlateLower(mount = 1, m = 1, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
