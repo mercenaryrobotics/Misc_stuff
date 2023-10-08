@@ -20,7 +20,7 @@ $M4ThreadlockNutDiameterFlat = 6.4;
 $M4ThreadlockNutDiameterRound = 7.9;
 $M4ThreadlockNutHeight = 4.8;
 $M4NonThreadedD = 4.3;
-$M4ThreadedD = 4.1;
+$M4ThreadedD = 4.00 - 0.05;
 $CChannelThickness = 2.4;
 
 $ChannelSpacing = 40;
@@ -105,7 +105,7 @@ $ClawPivotOffset = 5;
 
 //FTC 2023-2024 components
 //$PixelFloorPickerO1ShaftDSnug = 6.1;//Aluminum 6mm shaft
-$PixelFloorPickerO1ShaftDSnug = 8.6;//Steel 8mm shaft
+$PixelFloorPickerO1ShaftDSnug = 8.56;//8mm shaft
 //$BearingDiameter = 10.06;
 //$BearingDiameter = 16.09;
 $BearingDiameter = 14.09;
@@ -3557,7 +3557,7 @@ module PixelFloorPickerO1Upper()
   
 }
 
-module PixelFloorPickerO1MountBlockHoles(d = $M4ThreadedD, h = 30)
+module PixelFloorPickerO1MountBlockHolesOld(d = $M4ThreadedD, h = 30)
 {
   //Plate mount holes
   translate([-4, 4, -1])
@@ -3570,7 +3570,20 @@ module PixelFloorPickerO1MountBlockHoles(d = $M4ThreadedD, h = 30)
     cylinder(d = d, h = h);
 }
 
-module PixelFloorPickerO1MountBlock()
+module PixelFloorPickerO1MountBlockHoles(d = $M4ThreadedD, h = 30)
+{
+  //Plate mount holes
+  translate([-4, 5 + 4 + 16, -1])
+    cylinder(d = d, h = h);
+  translate([-4 - 24 , 4 + 5 + 16, -1])
+    cylinder(d = d, h = h);
+//  translate([-4, 4 + 64, -1])
+//    cylinder(d = d, h = h);
+//  translate([-4 - 32, 4 + 64, -1])
+//    cylinder(d = d, h = h);
+}
+
+module PixelFloorPickerO1MountBlockOld()
 {
   translate([0, -72 / 2, -40 / 2])
   {
@@ -3588,6 +3601,32 @@ module PixelFloorPickerO1MountBlock()
         translate([-4, 4 + 64 - 16, 4])
           cylinder(d = 8.5, h = 8);
         translate([-4 - 32 + 8, 4 + 64 - 16, 4])
+          cylinder(d = 8.5, h = 8);
+      }
+    }
+//    translate([16, 130, 16])
+//    cube([10, 200, 18], center = true);
+  }
+}
+
+module PixelFloorPickerO1MountBlock()
+{
+  translate([0, -50 / 2, -40 / 2])
+  {
+    difference()
+    {
+      cube([11, 50, 32]);
+      rotate(90, [0, 1, 0])
+      {
+        PixelFloorPickerO1MountBlockHoles();
+        //Bearing nut holes
+        translate([-4, 4 + 5, 4])
+          cylinder(d = 8.5, h = 8);
+        translate([-4 - 32 + 8, 4 + 5, 4])
+          cylinder(d = 8.5, h = 8);
+        translate([-4, 4 + 64 - 32 + 5, 4])
+          cylinder(d = 8.5, h = 8);
+        translate([-4 - 32 + 8, 4 + 64 - 32 + 5, 4])
           cylinder(d = 8.5, h = 8);
       }
     }
@@ -3632,7 +3671,8 @@ module PixelFloorPickerO1PlateLower(mount, m, HullBounds, Holes, Bearings)
         translate([10, 0, 0])
           rotate(-90, [0, 1, 0])
             PixelFloorPickerO1PlateHoles(8, $PlateThickness + 10, Holes);
-        translate([-7, 153, -11.1])
+        translate([-7, 163.35, -7.35])//Not the best way to do this. Just lazy at the moment!!!
+//        translate([-7, 153, -11.1])//Old mount block
           rotate($PixelFloorPickerO1MountBlockRotation, [1, 0, 0])
             rotate(90, [0, 1, 0])
             {
@@ -4097,6 +4137,75 @@ module DroneLauncherPrint()
       DroneLauncharTrigger();
 }
 
+module TRailPulleyClampLower()
+{
+  difference()
+  {
+    //Main cube
+    translate([0, 0, 0.8 - 1.5])
+      cube([25 + 3.8 + 3.8, 20 - 0.01, 19.5], center = true);
+    //Rail cutout, outer
+    translate([0, 25, -10 - 1.1])
+      cube([20.5, 50, 10], center = true);
+    //Rail cutout, inner
+    translate([0, 10, -10 - 1.1])
+      cube([14, 50, 7.5], center = true);
+    //T-slot stem
+    translate([0, 5, -1.2])
+      cube([8.1, 10, 10], center = true);
+    //T-slot top
+    translate([0, 5, -3.9 + 5.6])
+      cube([15, 10, 4.5], center = true);
+    //Floor clearance cutout
+    translate([0, -15, -25])
+      rotate(-35, [0, 0, 1])
+        cube([30, 30, 50]);
+    //Primary pulley
+    translate([0, -5, -5])
+      rotate(90, [0, 1, 0])
+        cylinder(d = $M4ThreadedD, h = 40, center = true);//$M4ThreadedD
+  }
+}
+
+module TRailPulleyClampUpper()
+{
+  mirror([0, 1, 0])
+  difference()
+  {
+    translate([0, 0, 1.8])
+      cube([25 + 3.8 + 3.8, 20 - 0.01, 18.5], center = true);
+    translate([0, 5, -10 - 1.1])
+      cube([20.5, 40, 10], center = true);
+    translate([0, 5, -1.2])
+      cube([8.1, 10, 10], center = true);
+    translate([0, 5, -3.9 + 5.6])
+      cube([15, 10, 4.5], center = true);
+    translate([0, -15, -10])
+      rotate(-35, [0, 0, 1])
+        cube([30, 30, 30]);
+    translate([0, -5, 5])
+      rotate(90, [0, 1, 0])
+        cylinder(d = $M4ThreadedD, h = 40, center = true);
+  }
+}
+
+module PulleyCap()
+{
+  difference()
+  {
+    cylinder(d = 16, h = 8.5);
+    cylinder(d = 14, h = 6.5);
+    cylinder(d = 7.9 + 0.36, h = 10);
+    translate([-5, 0, 0])
+      cube([10, 14, 5.5]);
+    translate([-5, 1, 3])
+      rotate(-90, [1, 0, 0])
+        cylinder(d = 4, h = 10);
+    translate([5, 1, 3])
+      rotate(-90, [1, 0, 0])
+        cylinder(d = 4, h = 10);
+  }
+}
 
 /*
 #translate([-300, 0, 0])
@@ -4253,6 +4362,10 @@ RobotArm();
 
 //Guide spacer and band guides
 //PixelFloorPickerO1UpperGuideSection(channels = 7);
+//Use the following for upper guides
+//PixelFloorPickerO1BeltGuide(width = 94.5, length = 42, channels = 6, mounts = 2, margin = 14);
+//Use the following for Lower guides
+//PixelFloorPickerO1BeltGuide(width = 105, length = 42, channels = 7, mounts = 2, margin = 141);
 //Guide spacer (allows using same guides for upper and lower carriages)
 //PixelFloorPickerO1BeltGuide(width = $PlateThickness + .5, length = 42, channels = 2, mounts = 2, margin = 14, holed = $M4NonThreadedD);
 //Upper rail plates
@@ -4274,4 +4387,9 @@ RobotArm();
 //  translate([$PixelFloorPickerO1LowerPlateSpacing / 2, 0, 0])
 //    PixelFloorPickerO1PlateLower(mount = 1, m = 0, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
 //  translate([-$PixelFloorPickerO1LowerPlateSpacing / 2, 0, 0])
-    PixelFloorPickerO1PlateLower(mount = 1, m = 1, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
+//    PixelFloorPickerO1PlateLower(mount = 1, m = 1, HullBounds = $PixelFloorPickerO1LowerBearingLocations, Holes = $PixelFloorPickerO1LowerHoleLocations, Bearings = $PixelFloorPickerO1LowerBearingLocations);
+
+TRailPulleyClampLower();
+//TRailPulleyClampUpper();
+//PulleyCap();
+
