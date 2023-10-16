@@ -1,0 +1,72 @@
+FTC Lib
+https://docs.ftclib.org/ftclib/
+https://docs.ftclib.org/ftclib/kinematics/odometry
+
+RoadRunner
+https://acme-robotics.gitbook.io/road-runner/
+https://learnroadrunner.com/
+
+gm0 Odometry
+https://gm0.org/en/latest/docs/software/concepts/odometry.html
+
+Weebly OpenOdometry
+https://openodometry.weebly.com/
+
+LoonyOdo
+https://www.theloonysquad.com/open-source/loonyodo
+
+Pure Pursuit
+https://www.youtube.com/watch?v=3l7ZNJ21wMo
+
+CTRL ALT drive train control loops
+https://www.ctrlaltftc.com/
+https://www.ctrlaltftc.com/practical-examples/drivetrain-control
+
+Wizards.exe Odometry video series. This includes a simple calibration process in part 4
+https://www.youtube.com/watch?v=OjNvAD350M4&list=PLICNg-rquurYgWAQGhu6iC0At75vgqFJp
+
+DogeCV examples but can be used to help with OpenCV by looking at detectors
+https://www.youtube.com/watch?v=ypMEHISY3iI (Look at about 4 minutes in)
+https://github.com/dogecv/DogeCV/tree/master/DogeCV
+
+OpenCV examples from previous years
+https://github.com/PinkToTheFuture/OpenCV_FreightFrenzy_2021-2022/
+
+FtcDashboard.getInstance().startCameraStream
+
+ Vision stuff from the past
+https://github.com/WWRC-FRC/Vision
+
+Other repositories
+https://github.com/WoodrowRobocats/
+
+Simulators
+https://www.reddit.com/r/FTC/comments/pw7zhg/freight_frenzy_released_for_xrc_simulator/
+https://xrcsimulator.org/Downloads/
+https://synthesis.autodesk.com/features.html
+https://ftcsim.org/
+https://www.youtube.com/playlist?list=PLdSjt0bIyfW-DCM-HbroDEteFZfj7o6_5
+https://www.youtube.com/watch?v=lwZUXa7Wgbs
+
+FTC Template
+https://github.com/trc492/FtcTemplate
+
+Mechanum code using FTC Lib
+https://ftcforum.firstinspires.org/forum/ftc-technology/android-studio/6361-mecanum-wheels-drive-code-example
+
+Mechanum code derivation
+https://compendium.readthedocs.io/en/latest/tasks/drivetrains/mecanum.html
+https://www.ctrlaltftc.com/practical-examples/drivetrain-control
+
+FTC Differential Swerve drive
+https://www.reddit.com/r/FTC/comments/ccxkv0/differential_swerve_drive_by_11115_gluten_free/
+
+Pure Pursuit Tutorial
+https://www.youtube.com/watch?v=3l7ZNJ21wMo
+
+BluJay code. Excellent vision examples and good code structure
+https://github.com/Future14473/BlueJay
+
+ 
+
+
