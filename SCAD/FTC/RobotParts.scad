@@ -4624,6 +4624,38 @@ module TeamToken()
     CurveTextString("20166", (3.75 * 25.4 / 2) - 2, 9, 2);
 }
 
+module PixelGripperOutline()
+{
+  difference()
+  {
+    hull()
+    {
+      translate([-2, 0])
+        circle(d =.5);
+      translate([2, 0])
+      circle(d =.5);
+    }
+    translate([-8/25.4, 0])
+      circle(d = 4/25.4);
+    translate([8/25.4, 0])
+      circle(d = 4/25.4);
+  }
+}
+
+module PixelGripperUpperOutline()
+{
+  PixelGripperOutline();
+  difference()
+  {
+    translate([-.25, .25])
+      square([.5, 1.1]);
+    translate([0, .5])
+      circle(d = 4/25.4);
+    translate([0, .5 + (16 / 25.4)])
+      circle(d = 4/25.4);
+  }
+}
+
 /*
 #translate([-300, 0, 0])
   cube([17*25.4, 1, 17.5*25.4]);
@@ -4800,7 +4832,7 @@ RobotArm();
 //PixelFloorPickerO1PlateDrive(m = 0, HullBounds = $PixelFloorPickerO1UpperHullLocationsDrive, Holes = $PixelFloorPickerO1UpperHoleLocations, Bearings = $PixelFloorPickerO1UpperBearingLocations);
 //PixelFloorPickerO1Plate(m = 1, HullBounds = $PixelFloorPickerO1UpperHullLocations, Holes = $PixelFloorPickerO1UpperHoleLocations, Bearings = $PixelFloorPickerO1UpperBearingLocations);
 //Upper rail plates, long version
-PixelFloorPickerO1PlateDrive(m = 0, HullBounds = $PixelFloorPickerO2UpperHullLocationsDrive, Holes = $PixelFloorPickerO2UpperHoleLocations, Bearings = $PixelFloorPickerO2UpperBearingLocations);
+//PixelFloorPickerO1PlateDrive(m = 0, HullBounds = $PixelFloorPickerO2UpperHullLocationsDrive, Holes = $PixelFloorPickerO2UpperHoleLocations, Bearings = $PixelFloorPickerO2UpperBearingLocations);
 //PixelFloorPickerO1Plate(m = 1, HullBounds = $PixelFloorPickerO2UpperHullLocations, Holes = $PixelFloorPickerO2UpperHoleLocations, Bearings = $PixelFloorPickerO2UpperBearingLocations);
 
 //Lower guides, short version
@@ -4827,3 +4859,6 @@ PixelFloorPickerO1PlateDrive(m = 0, HullBounds = $PixelFloorPickerO2UpperHullLoc
 //PulleyCap();
 
 //TeamToken();
+scale(25.4)
+//PixelGripperOutline();
+PixelGripperUpperOutline();
