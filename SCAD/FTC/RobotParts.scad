@@ -10,7 +10,6 @@ use <Getriebe.scad>
 use <Sprockets.scad>
 use <threads.scad>
 
-function and(a,b) = (a<1 || b<1) ? 0 : ((a%2>=1) && (b%2>=1) ? 1 : 0) + 2*and(a/2, b/2);
 
 // sprocket(size, teeth, bore, hub_diameter, hub_height, guideangle);
 $fn = 100;
@@ -138,19 +137,14 @@ $GrabberAngle = 25;
 
 $PixelFloorPickerO1MountBlockRotation = 20;
 
-
-//Drone launcher common
+//Drone launcher
 $DroneLauncherRailW = 12.1;
 $DroneLauncherRailL = 300;
+$DroneLauncherL = 170;
 $DroneLauncherRailThickness = 1.5;
 $DroneLauncherRailClearance = .4;
 $DroneLauncherCarriageClearance = .6;
-//Drone launcher V1
-$DroneLauncherV1L = 170;
-$DroneLauncherV1ExtensionCutout = 110;
-//Drone launcher V2
-$DroneLauncherV2L = 150;
-$DroneLauncherV2ExtensionCutout = 110;
+$DroneLauncherExtensionCutout = 110;
  
 
 //Short version
@@ -4411,85 +4405,40 @@ module DroneLauncherRailProfile(Width, Height, Length, Thickness)
       }
 }
  
-module DroneLauncherCarriageV1()
+module DroneLauncherCarriage()
 {
   difference()
   {
     //Core
-    translate([($DroneLauncherV1L / 2), 0, 4])
-      cube([$DroneLauncherV1L - 0.1, 40, 35], center = true);
+    translate([($DroneLauncherL / 2), 0, 4])
+      cube([$DroneLauncherL - 0.1, 40, 35], center = true);
     //Drone cutout
-    translate([($DroneLauncherV1L / 2) - 2, 0, 23])
-      cube([$DroneLauncherV1L - 0.1, 35, 30], center = true);
+    translate([($DroneLauncherL / 2) - 2, 0, 23])
+      cube([$DroneLauncherL - 0.1, 35, 30], center = true);
     //Front extension cutout
-    translate([$DroneLauncherV1ExtensionCutout / 2, 0, -9.5])
-      cube([$DroneLauncherV1ExtensionCutout, 45, 30], center = true);
+    translate([$DroneLauncherExtensionCutout / 2, 0, -9.5])
+      cube([$DroneLauncherExtensionCutout, 45, 30], center = true);
     //Elastic hook holes
-    translate([$DroneLauncherV1ExtensionCutout + 50, 10, -34.5 + 15])
+    translate([$DroneLauncherExtensionCutout + 50, 10, -34.5 + 15])
         cylinder(d = 3, h = 20);
-    translate([$DroneLauncherV1ExtensionCutout + 50, -10,  -34.5 + 15])
+    translate([$DroneLauncherExtensionCutout + 50, -10,  -34.5 + 15])
         cylinder(d = 3, h = 12);
+    //Launch release
+    translate([$DroneLauncherL, -6, 12])
+      cube([7, 12, 10]);
     //Rail slider
-    translate([$DroneLauncherV1L / 2, 0, -1])
-      cube([$DroneLauncherV1L, $DroneLauncherRailW + $DroneLauncherCarriageClearance, $DroneLauncherRailW + $DroneLauncherCarriageClearance], center = true);
+    translate([$DroneLauncherL / 2, 0, -1])
+      cube([$DroneLauncherL, $DroneLauncherRailW + $DroneLauncherCarriageClearance, $DroneLauncherRailW + $DroneLauncherCarriageClearance], center = true);
   }
   //Inside guides
   difference()
   {
-    translate([($DroneLauncherV1L / 2), 0, 9])
-      cube([$DroneLauncherV1L - 0.1, 10, 5], center = true);
-    translate([($DroneLauncherV1L / 2), 0, 15])
+    translate([($DroneLauncherL / 2), 0, 9])
+      cube([$DroneLauncherL - 0.1, 10, 5], center = true);
+    translate([($DroneLauncherL / 2), 0, 15])
     rotate(45, [1, 0, 0])
-      cube([$DroneLauncherV1L, 10, 10], center = true);
-  }
- 
-}
+      cube([$DroneLauncherL, 10, 10], center = true);
 
-module DroneLauncherCarriageV2()
-{
-  difference()
-  {
-    //Core
-    translate([($DroneLauncherV2L / 2), 0, 4])
-      cube([$DroneLauncherV2L - 0.1, 40, 35], center = true);
-    //Drone cutout
-    translate([($DroneLauncherV2L / 2) - 15, 0, 23])
-      cube([$DroneLauncherV2L - 0.1, 35, 30], center = true);
-    //Latch cutout
-    translate([$DroneLauncherV2L -10 - 3, -5, 15])
-      cube([10, 10, 30]);
-    //Front extension cutout
-    translate([$DroneLauncherV2ExtensionCutout / 2, 0, -9.5])
-      cube([$DroneLauncherV2ExtensionCutout, 45, 30], center = true);
-    //Elastic hook holes
-    translate([$DroneLauncherV2ExtensionCutout + 30, 10, -34.5 + 15])
-        cylinder(d = 3, h = 20);
-    translate([$DroneLauncherV2ExtensionCutout + 30, -10,  -34.5 + 15])
-        cylinder(d = 3, h = 12);
-    //Rail slider
-    translate([$DroneLauncherV1L / 2, 0, -1])
-      cube([$DroneLauncherV2L, $DroneLauncherRailW + $DroneLauncherCarriageClearance, $DroneLauncherRailW + $DroneLauncherCarriageClearance], center = true);
-//    //Holder hole
-//    translate([$DroneLauncherV2L - 10, 0, 12])
-//      cube([30, 20, 5], center = true);
-  }
-  //Holder pillars
-  difference()
-  {
-  translate([$DroneLauncherV2L - 10 - 15,0, 20 + 8])
-    cube([20, 40, 40], center = true);
-  translate([$DroneLauncherV2L - 10 - 15 - 2,0, 20 + 8])
-    cube([20, 12, 40], center = true);
-  }
-  //Inside guides
-  difference()
-  {
-    translate([0, -10, 8])
-      cube([50, 20, 35]);
-    translate([-1, 0, 25])
-      scale([1.0, 1.0, 1.8])
-        rotate(45, [1, 0, 0])
-          cube([55, 20, 20]);
   }
   
 }
@@ -4499,8 +4448,8 @@ module DroneLauncherCap()
   difference()
   {
     //Core
-    translate([5, 0, 18])
-      cube([20, $DroneLauncherRailW + 12, $DroneLauncherRailW + 51], center = true);
+    translate([5, 0, 5])
+      cube([20, $DroneLauncherRailW + 12, $DroneLauncherRailW + 25], center = true);
     //Channel opening
     translate([0, 0, 0])
       cube([10.2, $DroneLauncherRailW + $DroneLauncherRailClearance, $DroneLauncherRailW + $DroneLauncherRailClearance], center = true);
@@ -4513,17 +4462,12 @@ module DroneLauncherCap()
       rotate(90, [1, 0, 0])
         cylinder(d = $M4ThreadedD, h = 40, center = true);
     //Mount hole
-    translate([8, 0, 19 - 24])
+    translate([8, 0, 0])
       rotate(90, [1, 0, 0])
         cylinder(d = $M4ThreadedD, h = 40, center = true);
     //Latch cutout
-    translate([5, 0, 22])
-      cube([21, 6, 26], center = true);
-    //Gripper mount holes
-    translate([3, 8, 30])
-      cylinder(d = 4, h = 20);
-    translate([3, -8, 30])
-      cylinder(d = 4, h = 20);
+    translate([5, 0, 19])
+      cube([21, 6, 20], center = true);
   }
 }
  
@@ -4533,7 +4477,7 @@ module DroneLauncharTrigger()
     difference()
     {
       linear_extrude(height = 5,  center = true, convexity = 10, twist = 0)
-        polygon([[-3, 5], [-13, 14], [-20, 14], [-19, 11], [-23, 11], [-25, 19],[-5, 19],[5, 12],[30, 12],[30, 5]]);
+        polygon([[-3, 5], [-13, 14], [-20, 14], [-19, 11], [-23, 11], [-25, 19],[-5, 19],[5, 12],[25, 12],[25, 5]]);
       translate([0, 10, 0])
         cylinder(d = $M4NonThreadedD, h = 20, center = true);
     }
@@ -4545,12 +4489,12 @@ module DroneLauncherFrontCap()
     difference()
     {
       DroneLauncherCap();
-      translate([0, 0, 30])
-        cube([50, 50, 50], center = true);
+      translate([0, 0, 15])
+        cube([50, 50, 20], center = true);
     }
 }
 
-module DroneLauncher(Version = 1)
+module DroneLauncher()
 {
   color("lightgray")
     DroneLauncherRailProfile(Width = $DroneLauncherRailW, Height = $DroneLauncherRailW, Thickness = $DroneLauncherRailThickness, Length = $DroneLauncherRailL);
@@ -4561,56 +4505,25 @@ module DroneLauncher(Version = 1)
   translate([0, 0, 0])
     DroneLauncherFrontCap();
   //Launch carriage
-  if (Version == 1)
-  {
-    translate([117, 0, 1])
-      DroneLauncherCarriageV1();
-  }
-  else
-  {
-    translate([117, 0, 1])
-      DroneLauncherCarriageV2();
-  }
+  translate([117, 0, 1])
+    DroneLauncherCarriage();
   //Trigger
   translate([$DroneLauncherRailL + 3, 0, 9])
     DroneLauncharTrigger();
 }
 
-module DroneLauncherPrint(Version = 1, ToPrint = 15)
+module DroneLauncherPrint()
 {
-  if (and(ToPrint, 1) != 0)
-  {
-    translate([100, 10, 15])
-      rotate(90, [0, 1, 0])
-        DroneLauncherCap();
-  }
-  
-  if (and(ToPrint, 2) != 0)
-  {
-    translate([10, 10, 13.5])
-      DroneLauncherFrontCap();    
-  }
-  
-  if (and(ToPrint, 4) != 0)
-  {
-    if (Version == 1)
-    {
-      translate([-15, 50, 13.5])
-        DroneLauncherCarriageV1();
-    }
-    else
-    {
-      translate([-15, 50, 13.5])
-        DroneLauncherCarriageV2();
-    }
-  }
-  
-  if (and(ToPrint, 8) != 0)
-  {
-    translate([50, 20, 2.5])
-      rotate(90, [1, 0, 0])
-        DroneLauncharTrigger();
-  }
+  translate([100, 10, 15])
+    rotate(90, [0, 1, 0])
+      DroneLauncherCap();
+  translate([10, 10, 13.5])
+    DroneLauncherFrontCap();
+  translate([-15, 50, 13.5])
+    DroneLauncherCarriage();
+  translate([50, 20, 2.5])
+    rotate(90, [1, 0, 0])
+      DroneLauncharTrigger();
 }
 
 module TRailPulleyClampLower()
@@ -4748,6 +4661,589 @@ module PixelGripperUpperOutline()
   cube([17*25.4, 1, 17.5*25.4]);
 RobotArm();
 */
+
+
+module MisumiSlide(l = 15 * $Inch2mm, ext = 0)
+{
+  color("silver")
+  {
+    translate([0, -10, 0])
+      cube([8, 20, l]);
+    translate([8, -10, ext])
+      cube([8, 20, l]);
+  }
+}
+
+module MisumiSlide2Stage(l = 15 * $Inch2mm, ext = 0, offset = 0)
+{
+  MisumiSlide(l = l, ext = ext);
+  translate([16, -8, ext])
+  {
+    cube([16, 16, l + offset]);
+    translate([16, 0, 0 + offset])
+    MisumiSlide(l = l, ext = ext);
+  }
+}
+
+module IntakeRoller(d = 22, l = 240)
+{
+  rotate(90, [1, 0, 0])
+    cylinder(d = d, h = l, center = true);
+}
+
+module SmallRoborBounds()
+{
+  translate([0, -(17 * $Inch2mm / 2), 0])
+    cube([17 * $Inch2mm, 17 * $Inch2mm, 13 * $Inch2mm]);
+}
+
+module HopperOpening(wl = 20, wu = 30, l = 95, h = 100)
+{
+  hull()
+  {
+    cube([wl, l, 1], center = true);
+    translate([0, 0, h])
+      cube([wu, l, 1], center = true);
+  }
+}
+
+module DualHopperOpening(wl = 20, wu = 30, l = 95, h = 100)
+{
+  translate([0, (l + 4) / 2, 0])
+    HopperOpening(wl = wl, wu = wu, l = l, h = h);
+  translate([0, -((l + 4) / 2), 0])
+    HopperOpening(wl = wl, wu = wu, l = l, h = h);
+}
+
+module DualHopperBin()
+{
+  hopperlowerwidth = 20;
+  hopperupperwidth = 30;
+  hopperheight = 100;
+  hopperwallthickness = 1.5;
+  hopperhingeblocksize = 10;
+  hoppersinglewidth = 90;
+  
+  DualWidth = (hoppersinglewidth * 2) + 3 + 5;
+  
+  //Center around the hinge for the moment
+  translate([(hopperhingeblocksize + hopperupperwidth) / 2, 0, (hopperhingeblocksize / 2) - hopperheight])
+  {
+    difference()
+    {
+      union()
+      {
+        HopperOpening(wl = hopperlowerwidth + (hopperwallthickness * 2), wu = hopperupperwidth + (hopperwallthickness * 2), l = DualWidth , h = hopperheight - 0.1);
+        translate([- ((hopperhingeblocksize + hopperupperwidth) / 2), 0, -(hopperhingeblocksize / 2) + hopperheight])
+        {
+          difference()
+          {
+            cube([hopperhingeblocksize, DualWidth, hopperhingeblocksize], center = true);
+            rotate(90, [1, 0, 0])
+              cylinder(d = $M4ThreadedD, h = DualWidth, center = true);
+          }
+        }
+      }
+      //Cutout
+      DualHopperOpening(wl = hopperlowerwidth, wu = hopperupperwidth, l = hoppersinglewidth, h = hopperheight + 1);
+    }
+  }
+}
+
+module PixelFloorPickerO2()
+{
+  actuatorangle = -20;
+  supportspacing = 110;
+  extension = 0;
+ 
+  translate([supportspacing, 20, 0])
+    mirror([1, 0, 0])
+      PixelFloorPickerO2HopperArm(actuatorangle, extension);
+  translate([-supportspacing, 20, 0])
+    PixelFloorPickerO2HopperArm(actuatorangle, extension);
+    
+    
+  translate([0, 50, 0])
+  rotate(-30, [1, 0, 0])
+  translate([0, 0, extension + 340])
+  rotate(30, [1, 0, 0])  
+  rotate(-actuatorangle, [1, 0, 0])
+  translate([0, 125, 0])
+  rotate(actuatorangle - 20, [1, 0, 0])
+  rotate(90, [0, 0, 1])
+    DualHopperBin();
+    
+   
+  //Conveyor
+  translate([0, 0, 90])
+    rotate(25, [1, 0, 0])
+      cube([180, 380, 10], center = true);
+}
+
+/*
+module IntakeRobot()
+{
+  ext = 60;
+  offset = 50;
+  slidel = 300;
+  slideangle = 40;
+  #SmallRoborBounds();
+//  IntakeRoller(d = 22, l = 240);
+  translate([200, 0, 30])
+  {
+    rotate(slideangle, [0, 1, 0])
+    {
+      translate([60, 0, slidel + offset + (ext * 2) - 10])
+      {
+        rotate(-slideangle + 20, [0, 1, 0])
+          DualHopper();
+      }
+//      MisumiSlide2Stage(l = slidel, ext = ext, offset = offset);
+//      rotate(-90, [0, 0, 1])
+//      MisumiRailSet(support1 = true, length = 300, stages = 2, offset = 0);
+    }
+    translate([0, 0, -30])
+    rotate(-90, [0, 0, 1])
+      PixelFloorPickerO2();
+  }
+}
+*/
+
+module FullRobotV2()
+{
+  rotate(90, [0, 0, 1])
+    DriveBase(FrontOffset = 8, HHoles = 9);
+  PixelFloorPickerO2();
+}
+
+module PixelFloorPickerO2HopperArm(actuatorangle, extension = 0)
+{
+  //Linear rail
+  translate([0, -10, 85])
+    rotate(-30, [1, 0, 0])
+      MisumiRailSet(support1 = true, length = 300, stages = 2, offset = extension);
+ 
+  rotate(-30, [1, 0, 0]) 
+  translate([0, 0, extension])
+  rotate(30, [1, 0, 0])
+  {
+    //End actuator upper
+    translate([0, 190, 300])
+      rotate(270 - actuatorangle, [1, 0, 0])
+        cube([10, 10, 136]);
+    //End actuator lower
+    translate([0, 145, 220])
+      rotate(270 - (actuatorangle / 1.4), [1, 0, 0])
+        cube([10, 10, 153]);
+  }
+}
+
+module Backdrop()
+{
+  scale(25.4)
+  {
+    color("green", 0.7)
+    {
+      translate([-20.125 / 2, 0, 0])
+      {
+        difference()
+        {
+          cube([20.125, 25.625, 35]);
+          rotate(-30, [1, 0, 0])
+            translate([-0.5, -26, 0])
+              cube([21, 26, 45]);
+        }
+      }
+    }
+    color("white")
+    {
+      translate([0, 7.2, 12.4])
+        rotate(-30, [1, 0, 0])
+          cube([20, .1, 1], center = true);
+      translate([0, 10.95, 19])
+        rotate(-30, [1, 0, 0])
+          cube([20, .1, 1], center = true);
+      translate([0, 14.85, 25.75])
+        rotate(-30, [1, 0, 0])
+          cube([20, .1, 1], center = true);
+    }
+    color("purple")
+      translate([0, 17.15, 29.75])
+        rotate(-30, [1, 0, 0])
+          cube([20, .1, 1], center = true);
+  }
+}
+ 
+module MisumiSlideRail(length = 300)
+{
+  difference()
+  {
+    translate([-10, 0, 0])
+      cube([20, 7.2, length]);
+    translate([-8, 2.01, -0.5])
+      cube([16, 5.2, length + 1]);
+    rotate(-90, [1, 0, 0])
+    {
+      translate([0, -15, -0.1])
+        cylinder(d = 3.1, h = 10);
+      translate([0, -length + 15, -0.1])
+        cylinder(d = 3.1, h = 10);
+      translate([0, -length / 2, -0.1])
+        cylinder(d = 3.1, h = 10);
+    }
+  }
+}
+ 
+module Extrusion15mm(length = 300)
+{
+  color([0.95, 0.9, 0.95])
+    translate([0, 0, length / 2])
+      cube([15, 15, length], center = true);
+  color([.8, .8, .8])
+  {
+    translate([0, 0, length / 2])
+      cube([3.001, 15.001, length + 0.001], center = true);
+    translate([0, 0, length / 2])
+      cube([15.001, 3.001, length + 0.001], center = true);
+  }
+}
+ 
+module MisumiSlide(length = 300, offset = 0, showupper = true, showlower = true, pulleyextension = 0, showpulley = true)
+{
+  color("silver")
+  {
+    MisumiSlideRail(length = length);
+    translate([0, 16, offset])
+      mirror([0, 1, 0])
+        MisumiSlideRail(length = length);
+  }
+  color("darkgray")
+    translate([-8, 2, offset / 2])
+      cube([16, 12, length]);   
+  //Upper pulley
+  if (showupper)
+    translate([10, -15/2, length])
+      MisumiPulleyPlate(showpulley = true);
+  //Lower pulley
+  if (showlower)
+    translate([10, (15/2) + 16, offset])
+      rotate(180, [1, 0, 0])
+        MisumiPulleyPlate(showpulley = showpulley, extension = pulleyextension);
+}
+ 
+module MisumiPulleyReturnPlate(showpulley = true, holespacing = 16, extension = 30, voffset = 12)
+{
+  difference()
+  {
+    union()
+    {
+      hull()
+      {
+        translate([0, extension, 0])
+          rotate(90, [0, 1, 0])
+            cylinder(d = 12, h = 3);
+          rotate(90, [0, 1, 0])
+            cylinder(d = 12, h = 3);
+ 
+      }
+      hull()
+      {
+        rotate(90, [0, 1, 0])
+          cylinder(d = 12, h = 3);
+        translate([0, 0, holespacing + voffset])
+          rotate(90, [0, 1, 0])
+            cylinder(d = 12, h = 3);
+      }
+    }
+    translate([-0.1, extension, 0])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 3.1, h = 4);
+    translate([-0.1, 0, voffset])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 3.1, h = 4);
+    translate([-0.1, 0, holespacing + voffset])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 3.1, h = 4);
+    translate([-0.1, 0, 0])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 3.1, h = 4);
+  }
+  if (showpulley)
+  {
+    translate([3.5, extension, 0])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 12, h = 4);
+    translate([3.5, 0, 0])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 12, h = 4);
+  }
+}
+ 
+module MisumiPulleyPlate(showpulley = true, holespacing = 8, extension = 0)
+{
+  hoffset = 10.5;
+  voffset = 6;
+ 
+  difference()
+  {
+    union()
+    {
+      hull()
+      {
+        translate([0, hoffset + extension, 0])
+          rotate(90, [0, 1, 0])
+            cylinder(d = 12, h = 3);
+          rotate(90, [0, 1, 0])
+            cylinder(d = 12, h = 3);
+ 
+      }
+      hull()
+      {
+          rotate(90, [0, 1, 0])
+            cylinder(d = 12, h = 3);
+        translate([0, 0, -holespacing - voffset])
+          rotate(90, [0, 1, 0])
+            cylinder(d = 12, h = 3);
+     }
+    }
+    translate([-0.1, hoffset + extension, 0])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 3.1, h = 4);
+    translate([-0.1, 0, -holespacing - voffset])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 3.1, h = 4);
+    translate([-0.1, 0, -voffset])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 3.1, h = 4);
+  }
+  if (showpulley)
+    translate([3.5, hoffset, 0])
+      rotate(90, [0, 1, 0])
+        cylinder(d = 12, h = 4);
+}
+ 
+module MisumiRailSet(support1 = true, length = 300, stages = 2, offset = 100, returnstyle = 0)
+{
+  hoffset = support1 ? 15 : 0;
+  //Return style 0 = Return cord lines up with edge of outer slide
+  //Return style 1 = Return cord lines up with pull up pulley
+  returnextension = (returnstyle == 0) ? ((15/2) + (stages * 16) + (hoffset * (stages - 1)) - 3) :
+                                         ((15/2) + (stages * 16) + (hoffset * (stages - 1)) - 13);
+ 
+  for (i = [0:(stages - 1)])
+  {
+    translate([0, (i * (16 + 15)) + hoffset - 15, (i * (offset / stages))])
+    {
+      if (!(!support1 && (i == 0)))
+        translate([0, (15/2), 0])
+          Extrusion15mm(length = length);
+      if (i == stages - 1)
+        translate([0, 15 , 0])
+          MisumiSlide(length = length, offset = (offset / stages), showupper = true, showlower = true, pulleyextension = 5, showpulley = false);
+      else
+        translate([0, 15 , 0])
+          MisumiSlide(length = length, offset = (offset / stages), showupper = true, showlower = true);
+    }
+  }
+  //Pulley return plate
+  translate([10, (15/2), -12])
+    MisumiPulleyReturnPlate(showpulley = true, extension = returnextension, holespacing = 16, voffset = 15);
+  //Coupler plate
+  translate([10, (15/2), 85])
+    MisumiPulleyCouplerPlate();
+  //Motor mount plate
+  translate([10, (15/2), 50])
+    MisumiPulleyMotorMountPlate();
+}
+ 
+module MisumiPulleyCouplerPlate()
+{
+  rotate(90, [0, 1, 0])
+    difference()
+    {
+      hull()
+      {
+        translate([4, 0, 0])
+          cylinder(d = 15, h = 3);
+        translate([-4, 0, 0])
+          cylinder(d = 15, h = 3);
+        translate([0, -15, 0])
+          cylinder(d = 22, h = 3);
+      }
+      translate([0, 0, -.1])
+        cylinder(d = 3, h = 4);
+      translate([8, 0, -.1])
+        cylinder(d = 3, h = 4);
+      translate([-8, 0, -.1])
+        cylinder(d = 3, h = 4);
+      translate([0, -15, -.1])
+        cylinder(d = 14, h = 4);
+    }
+}
+ 
+module MisumiPulleyMotorMountPlate()
+{
+  rotate(90, [0, 1, 0])
+    difference()
+    {
+      hull()
+      {
+        translate([14, 0, 0])
+          cylinder(d = 15, h = 3);
+        translate([-14, 0, 0])
+          cylinder(d = 15, h = 3);
+        translate([0, -29, 0])
+          cylinder(d = 40, h = 3);
+      }
+      //Channel mount holes
+      translate([0, 0, -.1])
+        cylinder(d = 3, h = 4);
+      translate([8, 0, -.1])
+        cylinder(d = 3, h = 4);
+      translate([-8, 0, -.1])
+        cylinder(d = 3, h = 4);
+      translate([16, 0, -.1])
+        cylinder(d = 3, h = 4);
+      translate([-16, 0, -.1])
+        cylinder(d = 3, h = 4);
+      //Motor shaft hole
+      translate([0, -29, -.1])
+        cylinder(d = 9, h = 4);
+      //Motor mount holes
+      translate([0, -29 + 8, -.1])
+        cylinder(d = 4, h = 4);
+      translate([0, -29 - 8, -.1])
+        cylinder(d = 4, h = 4);
+      translate([8, -29, -.1])
+        cylinder(d = 4, h = 4);
+      translate([-8, -29, -.1])
+        cylinder(d = 4, h = 4);
+     
+    }
+}
+ 
+module CreateMisumiPlateSet(stages = 2, returnstyle = 0)
+{
+  hoffset = 15;
+  returnextension = (returnstyle == 0) ? ((15/2) + (stages * 16) + (hoffset * (stages - 1)) - 3) :
+                                         ((15/2) + (stages * 16) + (hoffset * (stages - 1)) - 13);
+ 
+  //projection(cut = true)
+    rotate(90, [0, 1, 0])
+    {
+      //Return plate
+      translate([0, -5, -20])
+        MisumiPulleyReturnPlate(showpulley = false, holespacing = 16, extension = returnextension, voffset = 15);
+      //'Regular' plate (2 per stage)
+      for (i = [0 : stages - 1])
+      {
+        translate([0, 15 + (35 * i), 35])
+          MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0);
+        translate([0, 33 + (35 * i), 0])
+          rotate(180, [1, 0, 0])
+            MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0);
+      }
+      //'Last' plate
+      translate([0, -5, 55])
+        MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 5);
+      //Coupler plate
+      translate([0, 5, 80])
+        MisumiPulleyCouplerPlate();
+      //Motor mount plate
+      translate([0, 70, 70])
+        MisumiPulleyMotorMountPlate();
+    }
+}
+
+module CChannelTRail(Holes)
+{
+  CChannel(Holes = Holes, Depth = 12, Rx = -1, Ry = -1);
+  translate([-12.5, 0, -5])
+    cube([10, (Holes + 1)*24, 10]);
+}
+
+module CChannel(Holes, Depth, Rx = 0, Ry = 0, Rz = 0)//Depth = 48 or 12
+{
+  $Length = (Holes + 1) * 24;
+  rotate(90, [Rx, 0, 0])
+  rotate(90, [0, Ry, 0])
+  rotate(90, [0, 0, Rz])
+    difference()
+    {
+      translate([0, -24, 0])
+        cube([$Length, 48, Depth]);
+      translate([-1, -21.5, 2.5])
+        cube([$Length + 2, 43, Depth]);
+      for (i = [1:Holes])
+      {
+        translate([i * 24, 0, -1])
+          cylinder(d = 17, h = 50);
+        translate([i * 24, 0, 24])
+        rotate(90, [1, 0, 0])
+          cylinder(d = 17, h = 50, center = true);
+      }
+    }
+}
+ 
+module MecanumWheel(ShaftD = 14)
+{
+  rotate(90, [1, 0, 0])
+  {
+    color("Yellow")
+      cylinder(d = 96, h = 38, center = true);
+    color("Black")
+      cylinder(d = ShaftD, h = 44, center = true);
+  }
+}
+
+module DriveBase(FrontOffset = 0, BackOffset = 0, HHoles = 7, VHoles = 17)
+{
+  translate([-(VHoles * 12) - 12, -(HHoles * 12) - 36, 24 + 48])
+  {
+    //Left channel
+    rotate(180, [1, 0, 0])
+      CChannel(Holes = VHoles, Depth = 48);
+    //Right channel
+    translate([0, 48 + ((HHoles + 1) * 24), 0])
+      rotate(180, [1, 0, 0])
+        CChannel(Holes = VHoles, Depth = 48);
+    //Front channel
+    translate([24 + (FrontOffset * 24), 24, 0])
+      rotate(180, [1, 0, 0])
+        CChannel(Holes = HHoles, Depth = 48, Rz = -1);
+    //Back channel
+    translate([((VHoles - BackOffset) * 24), 24, 0])
+      rotate(180, [1, 0, 0])
+        CChannel(Holes = HHoles, Depth = 48, Rz = -1);
+    //Wheels, left
+    translate([48, -(48 + 40) / 2, -24])
+      MecanumWheel();
+    translate([((VHoles - 1) * 24), -(48 + 40) / 2, -24])
+      MecanumWheel();
+    //Wheels, right
+    translate([48,((HHoles + 3) * 24) + (48 + 40) / 2, -24])
+      MecanumWheel();
+    translate([((VHoles - 1) * 24), ((HHoles + 3) * 24) + (48 + 40) / 2, -24])
+      MecanumWheel();
+  }
+}
+
+module BoundingBox()
+{
+  color([0.9, 0.9, 0.9, 0.3])
+    translate([-9 * $Inch2mm, -9 * $Inch2mm, 0])
+      cube([18 * $Inch2mm, 18 * $Inch2mm, 13.7 * $Inch2mm]);
+}
+
+//translate([0, 40, 0])
+
+//  Pixel("GREEN");
+
+ 
+
+//PixelFloorPickerO1Subsystem1();
+
+//PixelFloorPickerO1Subsystem2();
 
 //Display items
 //ArmHopper2($RotateExtension = 10, $ServoSpacing = 100);
@@ -4930,8 +5426,8 @@ RobotArm();
 
 //Roller plug
 //PixelFloorPickerO1RollerPlug();
-//DroneLauncher(Version = 2);
-DroneLauncherPrint(Version = 2, ToPrint = 11);
+//DroneLauncher();
+//DroneLauncherPrint();
 
 
 
@@ -4944,8 +5440,15 @@ DroneLauncherPrint(Version = 2, ToPrint = 11);
 //TRailPulleyClampLower();
 //TRailPulleyClampUpper();
 //PulleyCap();
-
 //TeamToken();
 //scale(25.4)
 //PixelGripperOutline();
 //PixelGripperUpperOutline();
+
+
+translate([0, 230, 0])
+  Backdrop();
+
+FullRobotV2();
+
+BoundingBox();
