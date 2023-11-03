@@ -23,9 +23,7 @@ $M4NonThreadedD = 4.3;
 $M4ThreadedD = 4.00 - 0.05;
 
 $M3NonThreadedD = 3.2;
-$M3ThreadedD = 4.00 - 0.05;
-
-$FlangeBearingDiameter = 14;
+$M3ThreadedD = 3.00 - 0.05;
 
 $CChannelThickness = 2.4;
 
@@ -152,14 +150,26 @@ $DroneLauncherRailClearance = .4;
 $DroneLauncherCarriageClearance = .6;
 $DroneLauncherExtensionCutout = 110;
  
+//Pixel hopper 
 hopperlowerwidth = 20;
 hopperupperwidth = 30;
 hopperheight = 90;
 hopperwallthickness = 2;
 hopperhingeblocksize = 10;
 hoppersinglewidth = 90;
-  DualHopperWidth = (hoppersinglewidth * 2) + 3 + 5;
+DualHopperWidth = (hoppersinglewidth * 2) + 3 + 5;
 hopperlinkagethickness = 6;
+hopperlinkagebasespacing = 77;
+hopperlinkagehopperspacing = 71;
+hopperlinkagetoplength = 118;
+hopperlinkagebottomlength = 133;
+hopperbaseplatethickness = 5;
+hopperbaseplateheight = 150;
+hopperedgeoffset = 40;//Distance that the servo is from the outer edge
+hopperbackdisplacement = 18;//Distance from the front edge of the plate
+hopperverticaldisplacement = hopperbaseplateheight - 20;//Distance from the bottom edge of the plate
+hopperlinkageseperation = hopperlinkagethickness + hopperlinkagethickness + DualHopperWidth + .5;//Spacing between the linkage likewise edges. NEEDS TO CONSIDER THE HOPPER WIDTH + 1x LINKAGE THICKNESS + CLEARANCE
+hopperbaseplatewidth = hopperlinkageseperation + hopperedgeoffset + 6;
 
 //Short version
 $PixelFloorPickerO1UpperHullLocations = [[($RollerDiameter / 2) + $PlateThickness + 40, 22, 0], 
@@ -4541,6 +4551,17 @@ module DualHopperOpening(wl = 20, wu = 30, l = 95, h = 100)
     HopperOpening(wl = wl, wu = wu, l = l, h = h);
 }
 
+module ServoMountPillarSet()
+{
+  //Servo support blocks
+//  translate([-22.3, -21, 21.2])
+    ServoMountPillar();
+//  translate([-22.3, -21, 21.2 + 48])
+    translate([0, 0, 48])
+    mirror([0, 0, 1])
+      ServoMountPillar();
+}
+
 module DualHopperBin(showservo)
 {  
   
@@ -4553,12 +4574,8 @@ module DualHopperBin(showservo)
       {
         //Outer frame
         HopperOpening(wl = hopperlowerwidth + (hopperwallthickness * 2), wu = hopperupperwidth + (hopperwallthickness * 2), l = DualHopperWidth , h = hopperheight - 0.1);
-        //Servo support blocks
         translate([-22.3, -21, 21.2])
-          ServoMountPillar();
-        translate([-22.3, -21, 21.2 + 48])
-          mirror([0, 0, 1])
-            ServoMountPillar();
+          ServoMountPillarSet();
       }
       //Pixel cutout
       DualHopperOpening(wl = hopperlowerwidth, wu = hopperupperwidth, l = hoppersinglewidth, h = hopperheight + 1);
@@ -4601,29 +4618,13 @@ module ServoMountPillar()
 
 module PixelFloorPickerO2(actuatorangle, supportspacing, position, offset, stages, width)
 {
- //Lift motor side
+ 
   translate([supportspacing, 20, 0])
     mirror([1, 0, 0])
-    {
-      PixelFloorPickerO2HopperArm(actuatorangle, position, offset, stages, width, motorposition = 184 - 24, channelholes = 5, offsetholes = 4, dopulleyguide = true);
-    }
-  //Outside lift motor support
-  color("silver")
-    translate([168.2, 48, 200])
-      rotate(90, [0, 1, 0])
-        RailSupportPlate();
-
-  //Conveyor motor side
+      PixelFloorPickerO2HopperArm(actuatorangle, position, offset, stages, width);
   translate([-supportspacing, 20, 0])
-  {
-    PixelFloorPickerO2HopperArm(actuatorangle, position, offset, stages, width, motorposition = 184 + 24, channelholes = 5, offsetholes = 2, dopulleyguide = false);   
-  }
-  //Outside conveyor motor support
-  color("silver")
-    translate([-168.2 - 3, 48, 200])
-      rotate(90, [0, 1, 0])
-        RailSupportPlate();
-
+    PixelFloorPickerO2HopperArm(actuatorangle, position, offset, stages, width);
+    
   //translate and rotate the hopper about the slider and position arms
   //Move the entire system horizontally wrt slider anchor
   translate([0, 40, 0])
@@ -4648,69 +4649,24 @@ module PixelFloorPickerO2(actuatorangle, supportspacing, position, offset, stage
     
    
   //Conveyor
-  PixelConveyor(conveyorwidth = (supportspacing * 2) + 20);
-}
-
-module PixelConveyor(conveyorwidth)
-{
-  bandcount = 12;
-  bandspacing = (conveyorwidth - 30) / (bandcount - 1);//Leave 15mm at each side
-  
-  color("AliceBlue")
-  {
-    rotate(90, [0, 1, 0])
-    {
-      //Top drive roller
-      translate([-287, 117.2, 0])
-        cylinder(d = 20, h = conveyorwidth, center = true);
-      //Bottom intake roller
-      translate([-48 + 32, -4 - (24 * 6), 0])
-        cylinder(d = 20, h = conveyorwidth, center = true);
-    }
-  }
-  color("Goldenrod")
-  //Move to leading roller center
-  translate([0, -148.3, 16])
-  {
-    //Angle to align with top roller
-    rotate(-44.4, [1, 0, 0])
-    {
-      //Move to outer edge of roller so rotation rotates about the roller
-      translate([0, 11, 0])
-        for (i = [0 : (bandcount / 2) - 1])
-        {
-          translate([(bandspacing / 2) + (bandspacing * i), 0, 0])
-            cylinder(d = 3, h = 380);
-          translate([-(bandspacing / 2) - (bandspacing * i), 0, 0])
-            cylinder(d = 3, h = 380);
-        }
-      //Move to outer edge of roller so rotation rotates about the roller
-      translate([0, -11, 0])
-        for (i = [0 : (bandcount / 2) - 1])
-        {
-          translate([(bandspacing / 2) + (bandspacing * i), 0, 0])
-            cylinder(d = 3, h = 380);
-          translate([-(bandspacing / 2) - (bandspacing * i), 0, 0])
-            cylinder(d = 3, h = 380);
-        }
-    }
-  }
+  translate([0, 0, 115])
+    rotate(35, [1, 0, 0])
+      cube([180, 380, 10], center = true);
 }
 
 module FullRobotV2(actuatorangle, supportspacing, position, offset, stages, width)
 {
   rotate(90, [0, 0, 1])
-    DriveBase(FrontOffset = 6, HHoles = 9, FrontOrientation = 0, BackOrientation = 0);
-  translate([0, -20, 0])
+    DriveBase(FrontOffset = 8, HHoles = 9);
   PixelFloorPickerO2(actuatorangle, supportspacing, position, offset, stages, width);
 }
 
-module PixelFloorPickerO2HopperArm(actuatorangle, position, offset, stages, width, motorposition, channelholes, offsetholes, dopulleyguide)
+module PixelFloorPickerO2HopperArm(actuatorangle, position, offset, stages, width)
 {
   //Linear rail
   translate([0, -10, 80])
     rotate(-30, [1, 0, 0])
-      MisumiRailSet(support1 = true, length = 300, stages = stages, position = position, offset = offset, width = width, motorposition = motorposition, channelholes = channelholes, offsetholes = offsetholes, dopulleyguide = dopulleyguide);
+      MisumiRailSet(support1 = true, length = 300, stages = stages, position = position, offset = offset, width = width);
  
   rotate(-30, [1, 0, 0]) 
     translate([0, 0, position + (offset * stages)])
@@ -4936,7 +4892,7 @@ module MisumiPulleyPlate(showpulley, holespacing, extension, offset, width)
         cylinder(d = 12, h = 4);
 }
  
-module MisumiRailSet(support1 = true, length = 300, stages = 2, position = 100, returnstyle = 0, offset = 0, width, motorposition, channelholes, offsetholes, dopulleyguide)
+module MisumiRailSet(support1 = true, length = 300, stages = 2, position = 100, returnstyle = 0, offset = 0, width)
 {
   hoffset = support1 ? 15 : 0;
   //Return style 0 = Return cord lines up with edge of outer slide
@@ -4962,29 +4918,12 @@ module MisumiRailSet(support1 = true, length = 300, stages = 2, position = 100, 
   //Pulley return plate
   translate([10, (15/2), -12 + offset])
     MisumiPulleyReturnPlate(showpulley = true, extension = returnextension, holespacing = 16, voffset = 15, width = width);
-  
-  if (dopulleyguide)
-  {
-    translate([10, 15/2, 185])
-      rotate(90, [1, 0, 0])
-        SlidePulleyGuide(width);
-  }
-  
-  //Motor mount
-  if (motorposition != -1)
-  {
-    translate([-35, -9, motorposition])
-      rotate(180, [1, 0,0])
-        MotorAndFrame(ChannelHoles = channelholes, Rx = -1, Ry = 0, Rz = -1, OffsetHoles = offsetholes);
-  }
-  /*
   //Coupler plate
   translate([10, (15/2), 85])
     MisumiPulleyCouplerPlate();
   //Motor mount plate
   translate([10, (15/2), 50])
     MisumiPulleyMotorMountPlate();
-  */
 }
  
 module MisumiPulleyCouplerPlate()
@@ -5028,27 +4967,27 @@ module MisumiPulleyMotorMountPlate()
       }
       //Channel mount holes
       translate([0, 0, -.1])
-        cylinder(d = 3, h = 4);
+        cylinder(d = $M3NonThreadedD, h = 4);
       translate([8, 0, -.1])
-        cylinder(d = 3, h = 4);
+        cylinder(d = $M3NonThreadedD, h = 4);
       translate([-8, 0, -.1])
-        cylinder(d = 3, h = 4);
+        cylinder(d = $M3NonThreadedD, h = 4);
       translate([16, 0, -.1])
-        cylinder(d = 3, h = 4);
+        cylinder(d = $M3NonThreadedD, h = 4);
       translate([-16, 0, -.1])
-        cylinder(d = 3, h = 4);
+        cylinder(d = $M3NonThreadedD, h = 4);
       //Motor shaft hole
       translate([0, -29, -.1])
         cylinder(d = 9, h = 4);
       //Motor mount holes
       translate([0, -29 + 8, -.1])
-        cylinder(d = 4, h = 4);
+        cylinder(d = $M4NonThreadedD, h = 4);
       translate([0, -29 - 8, -.1])
-        cylinder(d = 4, h = 4);
+        cylinder(d = $M4NonThreadedD, h = 4);
       translate([8, -29, -.1])
-        cylinder(d = 4, h = 4);
+        cylinder(d = $M4NonThreadedD, h = 4);
       translate([-8, -29, -.1])
-        cylinder(d = 4, h = 4);
+        cylinder(d = $M4NonThreadedD, h = 4);
      
     }
 }
@@ -5069,31 +5008,28 @@ module CreateMisumiPlate(show, stages, returnstyle = 0, offset, width)
         MisumiPulleyReturnPlate(showpulley = false, extension = returnextension, holespacing = 16, voffset = 15, width = width);
       //Regular pulley plate
       if (bitset(show, 1))
-        MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0, offset, width);
+        MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0, offset = offset, width = width);
       //Final 'last' plate that is ties to the carriage and not via a pulley
       if (bitset(show, 2))
-        MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 5, offset, width);
-//      //Coupler plate : Not used
-//      if (bitset(show, 3))
-//          MisumiPulleyCouplerPlate();
-//      //Motor mount plate : Not used
-//      if (bitset(show, 4))
-//        MisumiPulleyMotorMountPlate();
+        MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 5, offset = offset, width = width);
+      //Coupler plate
+      if (bitset(show, 3))
+          MisumiPulleyCouplerPlate();
+      //Motor mount plate
+      if (bitset(show, 4))
+        MisumiPulleyMotorMountPlate();
       //8mm centered double spacer
       if (bitset(show, 5))
         MisumiPulleyPlateSpacer(holespacing = 8, width = width, count = 2);
       //16mm centered double spacer
       if (bitset(show, 6))
         MisumiPulleyPlateSpacer(holespacing = 16, width = width, count = 2);
-      //8mm centered motor mount spacer and slider pulley guide mount spacer
+      //8mm centered motor mount spacer
       if (bitset(show, 7))
         MisumiPulleyPlateSpacer(holespacing = 8, width = width, count = 5);
-//      //8mm centered coupler mount spacer : Not used
-//      if (bitset(show, 8))
-//        MisumiPulleyPlateSpacer(holespacing = 8, width = width, count = 3);
-      if (bitset(show, 9))
-        SlidePulleyGuide(width = width);
-
+      //8mm centered coupler mount spacer
+      if (bitset(show, 8))
+        MisumiPulleyPlateSpacer(holespacing = 8, width = width, count = 3);
     }
   }
 }
@@ -5116,14 +5052,14 @@ module CreateMisumiPlateSet(stages, returnstyle, offset, width)
       for (i = [0 : stages - 1])
       {
         translate([0, 15 + (vspacing * i), 35])
-          MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0, offset, width);
+          MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0, offset = offset, width = width);
         translate([0, vspacing - 4 + (vspacing * i), 0])
           rotate(180, [1, 0, 0])
-            MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0, offset, width);
+            MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0, offset = offset, width = width);
       }
       //Final 'last' plate that is ties to the carriage and not via a pulley
       translate([0, -5, 55])
-        MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 5, offset, width);
+        MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 5, offset = offset, width = width);
       //Coupler plate
       translate([0, 5, 80])
         MisumiPulleyCouplerPlate();
@@ -5140,29 +5076,6 @@ module CChannelTRail(Holes)
     cube([10, (Holes + 1)*24, 10]);
 }
 
-module CChannelCentered(Holes, Depth, Rx = 0, Ry = 0, Rz = 0)//Depth = 48 or 12
-{
-  $Length = (Holes + 1) * 24;
-  rotate(90, [Rx, 0, 0])
-  rotate(90, [0, Ry, 0])
-  rotate(90, [0, 0, Rz])
-  translate([0, 0, -Depth / 2])
-    difference()
-    {
-      translate([0, -24, 0])
-        cube([$Length, 48, Depth]);
-      translate([-1, -21.5, 2.5])
-        cube([$Length + 2, 43, Depth]);
-      for (i = [1:Holes])
-      {
-        translate([i * 24, 0, -1])
-          cylinder(d = 17, h = 50);
-        translate([i * 24, 0, 24])
-        rotate(90, [1, 0, 0])
-          cylinder(d = 17, h = 50, center = true);
-      }
-    }
-}
 module CChannel(Holes, Depth, Rx = 0, Ry = 0, Rz = 0)//Depth = 48 or 12
 {
   $Length = (Holes + 1) * 24;
@@ -5186,44 +5099,18 @@ module CChannel(Holes, Depth, Rx = 0, Ry = 0, Rz = 0)//Depth = 48 or 12
     }
 }
  
-module MotorAndFrame(ChannelHoles, Rx, Ry, Rz, OffsetHoles = 0)
+module MecanumWheel(ShaftD = 14)
 {
-  //Motor
-  cylinder(d = 36, h = 117);
-  //Motor shaft
-  translate([0, 0, -20])
-    color("silver")
-      cylinder(d = 8, h = 20, $fn = 6);
-  if (ChannelHoles > 0)
+  rotate(90, [1, 0, 0])
   {
-    translate([0, 0, - (24 * OffsetHoles)])
-      CChannelCentered(Holes = ChannelHoles, Depth = 48, Rx = Rx, Ry = Ry, Rz = Rz);
+    color("Yellow")
+      cylinder(d = 96, h = 38, center = true);
+    color("Black")
+      cylinder(d = ShaftD, h = 44, center = true);
   }
 }
 
-module MecanumWheel(ShaftD = 8, MotorOrientation = 0, Mirror = 0, ChannelHoles = 0)
-{
-  mirror([0, Mirror, 0])
-  {
-    //Wheel
-    rotate(90, [1, 0, 0])
-    {
-      //Base
-      color("DarkRed")
-        cylinder(d = 96, h = 38, center = true);
-      //Shaft
-      color("Black")
-        translate([0, 0, 25])
-          cylinder(d = ShaftD, h = 88, center = true);
-    }
-    //Motor
-    rotate(90, [0, MotorOrientation, 0])
-      translate([0, -44, 24])
-        MotorAndFrame(ChannelHoles, Rx = -1, Ry = 1, Rz = -1);
-  }  
-}
-
-module DriveBase(FrontOffset = 0, BackOffset = 0, HHoles = 7, VHoles = 17, FrontOrientation = 0, BackOrientation = 0)
+module DriveBase(FrontOffset = 0, BackOffset = 0, HHoles = 7, VHoles = 17)
 {
   translate([-(VHoles * 12) - 12, -(HHoles * 12) - 36, 24 + 48])
   {
@@ -5244,16 +5131,14 @@ module DriveBase(FrontOffset = 0, BackOffset = 0, HHoles = 7, VHoles = 17, Front
         CChannel(Holes = HHoles, Depth = 48, Rz = -1);
     //Wheels, left
     translate([48, -(48 + 40) / 2, -24])
-      MecanumWheel(MototOrientation = FrontOrientation, Mirror = 1, ChannelHoles = 0);
+      MecanumWheel();
     translate([((VHoles - 1) * 24), -(48 + 40) / 2, -24])
-      MecanumWheel(MototOrientation = BackOrientation, Mirror = 1, ChannelHoles = 10);
+      MecanumWheel();
     //Wheels, right
     translate([48,((HHoles + 3) * 24) + (48 + 40) / 2, -24])
-    {
-      MecanumWheel(MototOrientation = FrontOrientation, ChannelHoles = 0);
-    }
+      MecanumWheel();
     translate([((VHoles - 1) * 24), ((HHoles + 3) * 24) + (48 + 40) / 2, -24])
-      MecanumWheel(MototOrientation = BackOrientation, ChannelHoles = 10);
+      MecanumWheel();
   }
 }
 
@@ -5301,136 +5186,103 @@ module DualHopperGate()
   }
 }
 
+module HopperBaseMount(showservo)
+{  
+  extrawidth = 10;
+  //Base plate
+  difference()
+  {
+    cube([hopperbaseplatewidth + extrawidth, hopperbaseplatethickness, hopperbaseplateheight]);
+    //Slider mount holes
+    translate([10, 0, hopperbaseplateheight - 5])
+    {
+      rotate(90, [1, 0, 0])
+        {
+          cylinder(d = $M3NonThreadedD, h = 10, center = true);
+          translate([0, -135, 0])//Spacing of misumi mount holes
+            cylinder(d = $M3NonThreadedD, h = 20, center = true);
+        }
+    }
+    //Excess plate pt 1
+    translate([30, 0, 0])
+      cube([hopperbaseplatewidth - 20 + extrawidth, 10, 45]);
+    //Excess plate pt 2
+    translate([40, 0, 0])
+      cube([hopperbaseplatewidth - 40 - 6, 10, 110]);
+  }
+  
+  //Servo side upper pivot
+  translate([hopperedgeoffset - 6, 0, hopperverticaldisplacement - 8 - hopperlinkagebasespacing])
+  {
+    difference()
+    {
+      cube([6, 26, 16]);
+      translate([0, hopperbackdisplacement, 8])
+        rotate(90, [0, 1, 0])
+          cylinder(d = $M4NonThreadedD, h = 20, center = true);
+    }    
+  }
+  //Far side upper pivot
+  translate([hopperedgeoffset + hopperlinkageseperation, 0, hopperverticaldisplacement - 8])
+  {
+    difference()
+    {
+      cube([6, 26, 16]);
+      translate([0, hopperbackdisplacement, 8])
+        rotate(90, [0, 1, 0])
+          cylinder(d = $M4NonThreadedD, h = 20, center = true);
+    }    
+  }
+  //Far side lower pivot
+  translate([hopperedgeoffset + hopperlinkageseperation, 0, hopperverticaldisplacement - 8 - hopperlinkagebasespacing])
+  {
+    difference()
+    {
+      cube([6, 26, 16]);
+      translate([0, hopperbackdisplacement, 8])
+        rotate(90, [0, 1, 0])
+          cylinder(d = $M4NonThreadedD, h = 20, center = true);
+    }    
+  }
+  
+  translate([hopperedgeoffset - 18.2, hopperbackdisplacement - hopperbaseplatethickness, hopperverticaldisplacement - 34])
+    rotate(-90, [0, 0, 1])
+      ServoMountPillarSet();
+  
+  if (showservo)
+    color("purple")
+      translate([hopperedgeoffset - 2, hopperbackdisplacement, hopperverticaldisplacement - 10])
+        rotate(90, [0, 1, 0])
+          import("GoBildaServoLoRes.stl");
+
+}
+
+module HopperLinkage(length, servo)
+{
+  difference()
+  {
+    hull()
+    {
+      cylinder(d = 12, h = hopperlinkagethickness);
+      translate([length, 0, 0])
+        cylinder(d = 12, h = hopperlinkagethickness);
+    }
+    cylinder(d = 3, h = hopperlinkagethickness + 1);
+    if (servo)
+      cylinder(d = 5.8, h = 3.5);
+    else
+      cylinder(d = $M4NonThreadedD, h = hopperlinkagethickness + 1);
+    translate([length, 0, 0])
+      cylinder(d = $M4NonThreadedD, h = hopperlinkagethickness + 1);
+  }
+}
+
+
 module BoundingBox()
 {
   color([0.9, 0.9, 0.9, 0.3])
     translate([-9 * $Inch2mm, -9 * $Inch2mm, 0])
       cube([18 * $Inch2mm, 18 * $Inch2mm, 13.7 * $Inch2mm]);
-}
-
-module HopperBaseMount(showservo)
-{
-  edgeoffset = 40;//Distance that the servo is from the outer edge
-  backdisplacement = 18;//Distance from the front edge of the plate
-  verticaldisplacement = 80;//Distance from the bottom edge of the plate
-  linkagespacing = hopperlinkagethickness + DualHopperWidth;//Spacing between the linkage likewise edges. NEEDS TO CONSIDER THE HOPPER WIDTH + 1x LINKAGE THICKNESS + CLEARANCE
-  //70
-  
-  //Base plate
-  cube([200, 5, 100]);
-  //Far side pivot
-  translate([edgeoffset + linkagespacing, 0, verticaldisplacement - 8])
-  cube([6, 26, 16]);
-  if (showservo)
-    translate([edgeoffset - 2, backdisplacement, verticaldisplacement - 10])
-      rotate(90, [0, 1, 0])
-        import("GoBildaServoLoRes.stl");
-
-}
-
-module HoleSet(D, XCount, YCount, XSpacing, YSpacing, H = 4)
-{
-  XOffset = -((XCount - 1) * XSpacing)/ 2;
-  rotate(90, [0, 0, 1])
-  {
-    for (x = [0:XCount - 1])
-    {
-      translate([XOffset + (x * XSpacing), 0, 0])
-        for (y = [0:YCount - 1])
-        {
-          translate([0, y * YSpacing, 0])
-            cylinder(d = D, h = H);
-        }
-    }
-  }
-}
-
-module RailSupportPlate()
-{
-  width = 164;
-  height = 132;
-  rounding = 15;
-  pointwidth = width - rounding;
-  pointheight = height - rounding;
-  anglecorrection = pointheight * tan(30);
-  echo (anglecorrection);
-  
-  difference()
-  {
-    translate([-rounding / 2, rounding / 2, 0])
-    {
-      hull()
-      {
-        cylinder(d = rounding, h = 3.3);
-        translate([0, pointwidth, 0])
-          cylinder(d = rounding, h = 3.3);
-        translate([-pointheight, pointwidth, 0])
-          cylinder(d = rounding, h = 3.3);
-        translate([-pointheight, anglecorrection, 0])
-          cylinder(d = rounding, h = 3.3);
-      }
-    }
-    //Main support mount holes
-    translate([-8, width - 24, -1])
-      HoleSet(D = 4, XCount = 2, YCount = 8, XSpacing = 32, YSpacing = 24, H = 10);
-    //Slide support mount holes
-    rotate(-30, [0, 0, 1])
-      translate([-26, 24 - (rounding / 2), -1])
-        HoleSet(D = 4, XCount = 2, YCount = 6, XSpacing = 32, YSpacing = 24, H = 10);
-    //Main support bearing holes
-    translate([-8 - 12, width - 24, -1])
-      HoleSet(D = $FlangeBearingDiameter, XCount = 1, YCount = 5, XSpacing = 32, YSpacing = 24, H = 10);
-    //Slide support bearing holes
-    rotate(-30, [0, 0, 1])
-      translate([-26 - 12, 24 - (rounding / 2), -1])
-        HoleSet(D = $FlangeBearingDiameter, XCount = 1, YCount = 5, XSpacing = 32, YSpacing = 24, H = 10);
-
-  }
-}
-
-module SlidePulleyGuide(width)
-{
-  height = 10;
-  rotate(90, [0, 1, 0])
-  {
-    difference()
-    {
-      hull()
-      {
-        translate([0, -16, 0])
-          cylinder(d = width, h = 3);
-        translate([0, 16, 0])
-          cylinder(d = width, h = 3);
-        translate([-height, -16, 0])
-          cylinder(d = width, h = 3);
-        translate([-height, 16, 0])
-          cylinder(d = width, h = 3);
-      }
-      //Mount holes
-      translate([0, -16, 0])
-        cylinder(d = 3, h = 5);
-      translate([0, 16, 0])
-        cylinder(d = 3, h = 5);
-      translate([0, -8, 0])
-        cylinder(d = 3, h = 5);
-      translate([0, 8, 0])
-        cylinder(d = 3, h = 5);
-      cylinder(d = 3, h = 5);
-      //Bearing holes
-      translate([-height, -16, 0])
-        cylinder(d = 4, h = 5);
-      translate([-height, 16, 0])
-        cylinder(d = 4, h = 5);
-      //Cutaway
-      hull()
-      {
-        translate([-18, 0, 0])
-          cylinder(d = 22, h = 5);
-        translate([-25, 0, 0])
-          cylinder(d = 22, h = 5);
-      }
-    }
-  }
 }
 
 //translate([0, 40, 0])
@@ -5637,18 +5489,41 @@ module SlidePulleyGuide(width)
 //PixelGripperUpperOutline();
 
 //CreateMisumiPlateSet(stages = 2, returnstyle = 0, offset = 10);
-//CreateMisumiPlate(show = (2^8), stages = 2, returnstyle = 0, offset = 10, width = 14);
-//RailSupportPlate();
+CreateMisumiPlate(show = (2^7), stages = 2, returnstyle = 0, offset = 10, width = 14);
+
+
 
 //translate([0, 230, 0])
 //  Backdrop();
 
-FullRobotV2(actuatorangle = 110, supportspacing = 109, position = 0, offset = 10, stages = 2, width = 12);
+//FullRobotV2(actuatorangle = 90, supportspacing = 120, position = 0, offset = 10, stages = 2);
 
 //PixelFloorPickerO2(actuatorangle = -20, supportspacing = 120, position = 00, offset = 10, stages = 2);
 //PixelFloorPickerO2HopperArm(actuatorangle = -20, position = 0, offset = 10, stages = 2, width = 15);
-//PixelFloorPickerO2HopperArm(actuatorangle = -20, position = 0, offset = 10, stages = 2, width = 12, motorposition = 184 - 24, channelholes = 5, offsetholes = 4);
 //BoundingBox();
 
-//HopperBaseMount(showservo = true);
+
+//hopperlinkagethickness = 6;
+//hopperlinkagebasespacing = 77;
+//hopperlinkagehopperspacing = 71;
+//hopperlinkagetoplength = 118;
+//hopperlinkagebottomlength = 133;
+
+//translate([hopperedgeoffset + (DualHopperWidth / 2) + hopperlinkagethickness, 0, 0])
+//  rotate(90, [0, 0, 1])
+//    DualHopperBin(showservo = false);
+
+//DualHopperGate();
+
+//Upper passive linkage
+//translate([hopperedgeoffset + DualHopperWidth + hopperlinkagethickness, hopperbackdisplacement, hopperverticaldisplacement])
+//  rotate(90, [0, 1, 0])
+//    HopperLinkage(length = hopperlinkagetoplength, servo = false);
+//Upper servo linkage
+//translate([hopperedgeoffset, hopperbackdisplacement, hopperverticaldisplacement])
+//  rotate(90, [0, 1, 0])
+//    HopperLinkage(length = hopperlinkagetoplength, servo = true);
+//Lower servo linkage
+//HopperLinkage(length = hopperlinkagebottomlength, servo = false);
+//  HopperBaseMount(showservo = false);
 
