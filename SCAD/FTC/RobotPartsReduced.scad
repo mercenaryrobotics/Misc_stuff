@@ -13,7 +13,7 @@
 // sprocket(size, teeth, bore, hub_diameter, hub_height, guideangle);
 
 /* [Display selection] */
-$DisplaySelection = 0;//[0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support]
+$DisplaySelection = 0;//[0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base]
 /* [Robot display] */
 RobotShowLifterSlide = true;//Lifter side slide
 RobotShowConveyorSlide = true;//Conveyor side slide
@@ -2891,6 +2891,8 @@ module HopperSubsystem()
 
 if ($DisplaySelection == 0)
   FullRobotV2(supportspacing = 109, offset = 10, stages = 2, width = 12);
+else if ($DisplaySelection == 12)
+  HopperBaseMount(showservo = false;)
 else
   CreateMisumiPlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
 
