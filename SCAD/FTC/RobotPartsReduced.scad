@@ -474,7 +474,7 @@ module CChannelHolesCornerSet()
   }
 }
 
-module CChannelHolesLength()
+module CChannelHolesLength(HoleCount)
 {
   for (i = [0 : HoleCount - 1])
   {
@@ -483,7 +483,7 @@ module CChannelHolesLength()
   }
 }
 
-module CChannelHoles()
+module CChannelHoles(DoEnd)
 {
   if ($DoCorners)
   {
@@ -2474,16 +2474,16 @@ module DriveBase(FrontOffset = 0, BackOffset = 0, HHoles = 7, VHoles = 17, Front
         CChannel(Holes = HHoles, Depth = 48, Rz = -1);
     //Wheels, left
     translate([48, -(48 + 40) / 2, -24])
-      MecanumWheel(MototOrientation = FrontOrientation, Mirror = 1, ChannelHoles = 0);
+      MecanumWheel(MotorOrientation = FrontOrientation, Mirror = 1, ChannelHoles = 0);
     translate([((VHoles - 1) * 24), -(48 + 40) / 2, -24])
-      MecanumWheel(MototOrientation = BackOrientation, Mirror = 1, ChannelHoles = 10);
+      MecanumWheel(MotorOrientation = BackOrientation, Mirror = 1, ChannelHoles = 10);
     //Wheels, right
     translate([48,((HHoles + 3) * 24) + (48 + 40) / 2, -24])
     {
-      MecanumWheel(MototOrientation = FrontOrientation, ChannelHoles = 0);
+      MecanumWheel(MotorOrientation = FrontOrientation, ChannelHoles = 0);
     }
     translate([((VHoles - 1) * 24), ((HHoles + 3) * 24) + (48 + 40) / 2, -24])
-      MecanumWheel(MototOrientation = BackOrientation, ChannelHoles = 10);
+      MecanumWheel(MotorOrientation = BackOrientation, ChannelHoles = 10);
   }
 }
 
