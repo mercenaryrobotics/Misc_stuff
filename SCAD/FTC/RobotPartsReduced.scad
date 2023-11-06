@@ -6,14 +6,14 @@
 
 //Included so global parameters are defined
 //include <RobotPrimitives.scad>
-//use <Getriebe.scad>
+use <Getriebe.scad>
 //use <Sprockets.scad>
 //use <threads.scad>
 
 // sprocket(size, teeth, bore, hub_diameter, hub_height, guideangle);
 
 /* [Display selection] */
-$DisplaySelection = 0;//[0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base]
+$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor gear, 15:Upper conveyor plate, 16:Lower conveyor plate]
 /* [Robot display] */
 RobotShowLifterSlide = true;//Lifter side slide
 RobotShowConveyorSlide = true;//Conveyor side slide
@@ -21,6 +21,10 @@ RobotShowDroneLauncher = true;//Drone launcher
 RobotShowHopper = true;//Pixel hopper
 RobotShowDrivebase = true;//Drive base
 RobotShowLowerConveyor = true;//Lower conveyor
+RobotShowUpperConveyor = true;//Upper conveyor
+RobotShowConveyorBands = true;
+RobotShowBoundingBoxSmall = false;
+
 /* [CChannel display] */
 $ChannelDoCorners = false;
 $ChannelDoCenter = true;
@@ -57,7 +61,7 @@ $ChannelSpacing = 40;
 //FTC 2023-2024 components
 $DrivebaseInnerSpacing = ((9 + 1) * 24);
 //$PixelFloorPickerO1ShaftDSnug = 6.1;//Aluminum 6mm shaft
-$PixelFloorPickerO1ShaftDSnug = 8.56;//8mm shaft
+$PixelFloorPickerO1ShaftDSnug = 8.25;//8mm shaft
 //$BearingDiameter = 10.06;
 //$BearingDiameter = 16.09;
 $BearingDiameter = 14.09;
@@ -88,6 +92,9 @@ $ArmAngle = 0;
 $GrabberAngle = 25;
 
 $PixelFloorPickerO1MountBlockRotation = 20;
+$FrontRollerDistanceLower = 360;
+$FrontRollerDistanceUpper = 390;
+$PixelConveyorAngle = -46.4;
 
 //Drone launcher common
 $DroneLauncherRailW = 12.1;
@@ -771,13 +778,6 @@ module GolfBotClubAttatch()
   }
 }
 
-module BoundingBox()
-{
-  color([0.9, 0.9, 0.9, 0.3])
-    translate([-9 * $Inch2mm, 0, 0])
-      cube([18 * $Inch2mm, 18 * $Inch2mm, 13.5 * $Inch2mm]);
-}
-
 module Pixel($Color)
 {
   color($Color)
@@ -1373,8 +1373,8 @@ module PixelFloorPickerO1RollerPlug()
     union()
     {
       translate([0, 0, 2])
-        cylinder(d1 = 16.6, d2 = 15.9, h = 15);
-      cylinder(d = 21, h = 2);
+        cylinder(d1 = 15.8, d2 = 15.4, h = 15);
+//      cylinder(d = 21, h = 2);
     }
     cylinder(d = $PixelFloorPickerO1ShaftDSnug, h = 20, $fn = 6);
   }
@@ -1835,7 +1835,7 @@ module PixelFloorPickerO2(supportspacing, position, offset, stages, width)
       translate([168.2, 28, 196])
         rotate(90, [0, 1, 0])
           RailSupportPlate();
-          }
+  }
 
   //Conveyor motor side
   if (RobotShowConveyorSlide)
@@ -1869,52 +1869,115 @@ module PixelFloorPickerO2(supportspacing, position, offset, stages, width)
     
    
   //Conveyor
-  if (RobotShowLowerConveyor)
-    PixelConveyor(conveyorwidth = (supportspacing * 2) + 20);
+  translate([0, 91.2, 272.6])
+  {
+    if (RobotShowLowerConveyor)
+      PixelConveyor(conveyorwidth = (supportspacing * 2) + 5, conveyorlength = $FrontRollerDistanceLower, upperlower = 0);
+    if (RobotShowUpperConveyor)
+      PixelConveyor(conveyorwidth = (supportspacing * 2) + 5, conveyorlength = $FrontRollerDistanceUpper, upperlower = 1);
+  }
 }
 
-module PixelConveyor(conveyorwidth)
+module PixelConveyorArm(UpperLower = 0, length)
+{
+  $DriveGearSpacing = 48;
+  $SupportHoleCount = 6;
+  $SupportHoleSpacing = length/($SupportHoleCount + 1);
+  
+  difference()
+  {
+    union()
+    {
+      if (UpperLower == 0)
+      //Drive wheel pair
+      hull()
+      {
+        //Intersecting bearing
+        cylinder(d = 22, h = 3.5, center = true);
+        //Upper bearing
+        translate([-$DriveGearSpacing, 0, 0])
+          cylinder(d = 22, h = 3.5, center = true);
+      }
+      //Front edge partner
+      hull()
+      {
+        //Intersecting bearing
+        cylinder(d = 22, h = 3.5, center = true);
+        translate([0, -length, 0])
+          cylinder(d = 18, h = 3.5, center = true);
+      }
+    }
+    cylinder(d = $FlangeBearingDiameter, h = 3.6, center = true);
+    translate([-$DriveGearSpacing, 0, 0])
+      cylinder(d = $FlangeBearingDiameter, h = 3.6, center = true);
+    translate([0, -length, 0])
+      cylinder(d = $FlangeBearingDiameter, h = 3.6, center = true);
+    for (i = [0:$SupportHoleCount])
+    {
+      translate([0, -$SupportHoleSpacing * i, 0])
+        cylinder(d = $M3NonThreadedD, h = 3.6, center = true);
+    }
+  }
+}
+
+module PixelConveyor(conveyorwidth, conveyorlength, upperlower)
 {
   bandcount = 12;
   bandspacing = (conveyorwidth - 30) / (bandcount - 1);//Leave 15mm at each side
   
-  color("AliceBlue")
+  upperlowertranslatez = upperlower ? 48 : 0;
+  plateoffset          = upperlower ? 0 : 3;
+  upperangleadjust     = upperlower ? 3 : 0;
+  
+  rotate(-$PixelConveyorAngle + upperangleadjust, [1, 0, 0])
   {
-    rotate(90, [0, 1, 0])
+    translate([0, 0, upperlowertranslatez])
     {
-      //Top drive roller
-      translate([-287, 117.2, 0])
-        cylinder(d = 20, h = conveyorwidth, center = true);
-      //Bottom intake roller
-      translate([-48 + 32, -4 - (24 * 6), 0])
-        cylinder(d = 20, h = conveyorwidth, center = true);
-    }
-  }
-  color("Goldenrod")
-  //Move to leading roller center
-  translate([0, -148.3, 16])
-  {
-    //Angle to align with top roller
-    rotate(-44.4, [1, 0, 0])
-    {
-      //Move to outer edge of roller so rotation rotates about the roller
-      translate([0, 11, 0])
-        for (i = [0 : (bandcount / 2) - 1])
+      color("AliceBlue")
+      {
+        rotate(90, [0, 1, 0])
         {
-          translate([(bandspacing / 2) + (bandspacing * i), 0, 0])
-            cylinder(d = 3, h = 380);
-          translate([-(bandspacing / 2) - (bandspacing * i), 0, 0])
-            cylinder(d = 3, h = 380);
+          //Top drive roller
+          cylinder(d = 20, h = conveyorwidth, center = true);
+          //Side plates
+          translate([0, 0, (conveyorwidth / 2) + plateoffset])
+              PixelConveyorArm(UpperLower = upperlower, length = conveyorlength);
+          translate([0, 0, -(conveyorwidth / 2) - plateoffset])
+              PixelConveyorArm(UpperLower = upperlower, length = conveyorlength);
+          //Bottom intake roller
+         translate([0, -conveyorlength, 0])
+            cylinder(d = 20, h = conveyorwidth, center = true);
         }
-      //Move to outer edge of roller so rotation rotates about the roller
-      translate([0, -11, 0])
-        for (i = [0 : (bandcount / 2) - 1])
+      }
+      color("Goldenrod")
+      //Move to leading roller center
+      if (RobotShowConveyorBands)
+      {
+        translate([0, -conveyorlength, 0])
         {
-          translate([(bandspacing / 2) + (bandspacing * i), 0, 0])
-            cylinder(d = 3, h = 380);
-          translate([-(bandspacing / 2) - (bandspacing * i), 0, 0])
-            cylinder(d = 3, h = 380);
+          rotate(-90, [1, 0, 0])
+          {
+            //Move to outer edge of roller so rotation rotates about the roller
+            translate([0, 11, 0])
+              for (i = [0 : (bandcount / 2) - 1])
+              {
+                translate([(bandspacing / 2) + (bandspacing * i), 0, 0])
+                  cylinder(d = 3, h = 355);
+                translate([-(bandspacing / 2) - (bandspacing * i), 0, 0])
+                  cylinder(d = 3, h = 355);
+              }
+            //Move to outer edge of roller so rotation rotates about the roller
+            translate([0, -11, 0])
+              for (i = [0 : (bandcount / 2) - 1])
+              {
+                translate([(bandspacing / 2) + (bandspacing * i), 0, 0])
+                  cylinder(d = 3, h = conveyorlength);
+                translate([-(bandspacing / 2) - (bandspacing * i), 0, 0])
+                  cylinder(d = 3, h = conveyorlength);
+              }
+          }
         }
+      }
     }
   }
 }
@@ -2278,7 +2341,7 @@ module MisumiPulleyMotorMountPlate()
     }
 }
  
-module CreateMisumiPlate(show, stages, returnstyle = 0, offset, width)
+module CreatePlate(show, stages, returnstyle = 0, offset, width)
 {
   vspacing = 45;
   hoffset = 15;
@@ -2320,49 +2383,13 @@ module CreateMisumiPlate(show, stages, returnstyle = 0, offset, width)
       else if (show == 10)
         SlidePulleyGuide(width = width);
     }
-    if (show == 11)
-//    intersection()
-//    {
-      RailSupportPlate();
-//      translate([-32, 128, 0])
-//        cube([25, 25, 50]);
-//      }
+  if (show == 11)
+    RailSupportPlate();
+  if (show == 15)
+    PixelConveyorArm(UpperLower = 1, length = $FrontRollerDistanceUpper);
+  else if (show == 16)
+    PixelConveyorArm(UpperLower = 0, length = $FrontRollerDistanceLower);
   }
-}
-
-module CreateMisumiPlateSet(stages, returnstyle, offset, width)
-{
-  vspacing = 45;
-  hoffset = 15;
-  returnextension = (returnstyle == 0) ? ((15/2) + (stages * 16) + (hoffset * (stages - 1)) - 3) :
-                                         ((15/2) + (stages * 16) + (hoffset * (stages - 1)) - 13);
-
-                                         
-  projection(cut = true)
-    rotate(90, [0, 1, 0])
-    {
-      //Return plate
-      translate([0, -5, -20])
-          MisumiPulleyReturnPlate(showpulley = false, extension = returnextension, holespacing = 16, voffset = 15, width = width);
-      //'Regular' plate (2 per stage)
-      for (i = [0 : stages - 1])
-      {
-        translate([0, 15 + (vspacing * i), 35])
-          MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0, offset, width);
-        translate([0, vspacing - 4 + (vspacing * i), 0])
-          rotate(180, [1, 0, 0])
-            MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 0, offset, width);
-      }
-      //Final 'last' plate that is ties to the carriage and not via a pulley
-      translate([0, -5, 55])
-        MisumiPulleyPlate(showpulley = false, holespacing = 8, extension = 5, offset, width);
-      //Coupler plate
-      translate([0, 5, 80])
-        MisumiPulleyCouplerPlate();
-      //Motor mount plate
-      translate([0, 70, 70])
-        MisumiPulleyMotorMountPlate();
-    }
 }
 
 module CChannelTRail(Holes)
@@ -2796,6 +2823,11 @@ module HopperSubsystem()
   HopperAndArms();
 }
 
+module FishboneGear(Teeth, Depth, Hub)
+{
+  PixelFloorPickerO1DriveGearFixHub(Depth = 9,ShaftD = $PixelFloorPickerO1ShaftDSnug, ShaftShape = 1, DoGub = true, GrubNut = 0, Hub = Hub)
+    pfeilrad (modul=1, zahnzahl=Teeth, breite=$PixelFloorPickerO1DriveGearThickness, bohrung=10, eingriffswinkel=20, schraegungswinkel=30, optimiert=true);
+}
 
 //PixelFloorPickerO1Subsystem1();
 
@@ -2881,28 +2913,32 @@ module HopperSubsystem()
 //PixelGripperOutline();
 //PixelGripperUpperOutline();
 
-//CreateMisumiPlateSet(stages = 2, returnstyle = 0, offset = 10);
-//CreateMisumiPlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
+//CreatePlateSet(stages = 2, returnstyle = 0, offset = 10);
+//CreatePlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
 //RailSupportPlate();
 //FTCLifterSpindle($SpindleDiameter = 30, $SpindleLength = 25, $SpindleType = 1, $ShaftType = 1, $ShaftDiameter = 8 + 0.4, Splitter = true);
 //SpindleCore(InnerD = 30, OuterD = 34, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 8, ShaftFaces = 6, ThreadD = 3);
 //translate([0, 230, 0])
 //  Backdrop();
 
-if ($DisplaySelection == 0)
-  FullRobotV2(supportspacing = 109, offset = 10, stages = 2, width = 12);
-else if ($DisplaySelection == 12)
-  HopperBaseMount(showservo = false;)
-else
-  CreateMisumiPlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
-
-
 //PixelFloorPickerO2(actuatorangle = -20, supportspacing = 120, position = 00, offset = 10, stages = 2);
 //PixelFloorPickerO2HopperArm(actuatorangle = -20, position = 0, offset = 10, stages = 2, width = 15);
 //PixelFloorPickerO2HopperArm(actuatorangle = -20, position = 0, offset = 10, stages = 2, width = 12, motorposition = 184 - 24, channelholes = 5, offsetholes = 4);
-//BoundingBox();
 
 
 //HopperSubsystem();
 
 
+if ($DisplaySelection == 0)
+  FullRobotV2(supportspacing = 109, offset = 10, stages = 2, width = 12);
+else if ($DisplaySelection == 12)
+  HopperBaseMount(showservo = false);
+else if ($DisplaySelection == 13)
+  PixelFloorPickerO1RollerPlug();
+else if ($DisplaySelection == 14)
+  FishboneGear(Teeth = 48, Depth = 9, Hub = 20);
+else
+  CreatePlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
+
+if (RobotShowBoundingBoxSmall)
+  BoundingBox();
