@@ -13,7 +13,7 @@ use <Getriebe.scad>
 // sprocket(size, teeth, bore, hub_diameter, hub_height, guideangle);
 
 /* [Display selection] */
-$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor gear, 15:Upper conveyor plate, 16:Lower conveyor plate]
+$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor Gear, 15:Upper Conveyor Plate, 16:Lower Conveyor Plate, 17:Conveyor Gear Small Hex, 18:Conveyor Gear Small Bearing]
 /* [Robot display] */
 RobotShowLifterSlide = true;//Lifter side slide
 RobotShowConveyorSlide = true;//Conveyor side slide
@@ -1888,7 +1888,7 @@ module PixelConveyorArm(UpperLower = 0, length)
   {
     union()
     {
-      if (UpperLower == 0)
+      if (UpperLower == 0)//Lower
       //Drive wheel pair
       hull()
       {
@@ -1907,9 +1907,17 @@ module PixelConveyorArm(UpperLower = 0, length)
           cylinder(d = 18, h = 3.5, center = true);
       }
     }
+    //Bearing holes
     cylinder(d = $FlangeBearingDiameter, h = 3.6, center = true);
     translate([-$DriveGearSpacing, 0, 0])
       cylinder(d = $FlangeBearingDiameter, h = 3.6, center = true);
+    //Drive gear mount holes
+    translate([-(48 / 3), 0, 0])
+      cylinder(d = $M4NonThreadedD, h = 3.6, center = true);
+    translate([-(2 * 48 / 3), 0, 0])
+      cylinder(d = $M4NonThreadedD, h = 3.6, center = true);
+
+    //Front bearing
     translate([0, -length, 0])
       cylinder(d = $FlangeBearingDiameter, h = 3.6, center = true);
     for (i = [0:$SupportHoleCount])
@@ -2823,10 +2831,10 @@ module HopperSubsystem()
   HopperAndArms();
 }
 
-module FishboneGear(Teeth, Depth, Hub)
+module FishboneGear(Teeth, Depth, Hub, ShaftShape = 1, ShaftD = $PixelFloorPickerO1ShaftDSnug)
 {
-  PixelFloorPickerO1DriveGearFixHub(Depth = 9,ShaftD = $PixelFloorPickerO1ShaftDSnug, ShaftShape = 1, DoGub = true, GrubNut = 0, Hub = Hub)
-    pfeilrad (modul=1, zahnzahl=Teeth, breite=$PixelFloorPickerO1DriveGearThickness, bohrung=10, eingriffswinkel=20, schraegungswinkel=30, optimiert=true);
+  PixelFloorPickerO1DriveGearFixHub(Depth = Depth,ShaftD = ShaftD, ShaftShape = ShaftShape, DoGub = true, GrubNut = 0, Hub = Hub)
+    pfeilrad (modul=1, zahnzahl=Teeth, breite=$PixelFloorPickerO1DriveGearThickness, bohrung=10, eingriffswinkel=20, schraegungswinkel=30, optimiert=false);
 }
 
 //PixelFloorPickerO1Subsystem1();
@@ -2928,6 +2936,20 @@ module FishboneGear(Teeth, Depth, Hub)
 
 //HopperSubsystem();
 
+module ConveyorTransferGear(type)
+{
+  if (type == 0)
+    FishboneGear(Teeth = 24, Depth = 9, Hub = 15);//Conveyor drive gear, hex 8mm
+  else if (type == 1)
+  {    
+    difference()
+    {
+      pfeilrad (modul=1, zahnzahl=24, breite=5, bohrung=8, eingriffswinkel=20, schraegungswinkel=30, optimiert=false);
+      cylinder(d = 10, h = 3.8);
+    }
+  }
+}
+
 
 if ($DisplaySelection == 0)
   FullRobotV2(supportspacing = 109, offset = 10, stages = 2, width = 12);
@@ -2937,8 +2959,13 @@ else if ($DisplaySelection == 13)
   PixelFloorPickerO1RollerPlug();
 else if ($DisplaySelection == 14)
   FishboneGear(Teeth = 48, Depth = 9, Hub = 20);
+else if ($DisplaySelection == 17)
+  ConveyorTransferGear( type = 0);
+else if ($DisplaySelection == 18)
+  ConveyorTransferGear( type = 1);
 else
   CreatePlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
 
 if (RobotShowBoundingBoxSmall)
   BoundingBox();
+
