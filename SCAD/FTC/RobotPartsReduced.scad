@@ -13,7 +13,7 @@ use <Getriebe.scad>
 // sprocket(size, teeth, bore, hub_diameter, hub_height, guideangle);
 
 /* [Display selection] */
-$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor Gear, 15:Upper Conveyor Plate, 16:Lower Conveyor Plate, 17:Conveyor Gear Small Hex, 18:Conveyor Gear Small Bearing, 19:Lifter Spindle, 20:Spacer, 21:Rev Hub Mount]
+$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor Gear, 15:Upper Conveyor Plate, 16:Lower Conveyor Plate, 17:Conveyor Gear Small Hex, 18:Conveyor Gear Small Bearing, 19:Lifter Spindle, 20:Spacer, 21:Rev Hub Mount, 22:Drone Launcher]
 /* [Robot display] */
 RobotShowLifterSlide = true;//Lifter side slide
 RobotShowConveyorSlide = true;//Conveyor side slide
@@ -33,9 +33,11 @@ $ChannelDoCenter = true;
 $ChannelDoSlots = false;
 /* [Misc] */
 FlangeBearingDiameterCorrection = 0.0;//-0.41;
+LifterSpindleCord = false;
+LifterSpindleCenter = false;
 /* [Spacer settings] */
 SpacerOuter = 13.5;
-SpacerInner = 8.3;
+SpacerInner = 8.35;
 SpacerSides = 6;
 SpacerThickness = 2.5;
 /* [Rev Mount setting] */
@@ -63,7 +65,7 @@ $M3ThreadedD = 3.00;
 $FlangeBearingDiameter = 14 + FlangeBearingDiameterCorrection;
 $FlangeBearingClearance = 16;
 
-$HexShaft8mmDSnug = 8.3;//8mm shaft
+$HexShaft8mmDSnug = 8.30;//8mm shaft
 
 $CChannelThickness = 2.4;
 $ChannelInsertBlockWidth = 43;
@@ -335,7 +337,7 @@ module CamerMountLogitec()
 }
 
  
-module SpindleCore(InnerD, OuterD, Height, RimHeight, SlopeSpan, ShaftD, ShaftFaces, ThreadD)
+module SpindleCore(InnerD, OuterD, Height, RimHeight, SlopeSpan, ShaftD, ShaftFaces, ThreadD, Center, Cord)
 {
   difference()
   {
@@ -353,11 +355,24 @@ module SpindleCore(InnerD, OuterD, Height, RimHeight, SlopeSpan, ShaftD, ShaftFa
         cylinder(d = OuterD, h = RimHeight);
       translate([0, 0, Height - RimHeight - SlopeSpan])
         cylinder(d2 = OuterD, d1 = InnerD, h = SlopeSpan);
+      
+      if (Center)
+      {
+        translate([0, 0, Height / 2])
+          cylinder(d1 = OuterD, d2 = InnerD, h = SlopeSpan);
+        translate([0, 0, Height / 2])
+        mirror([0, 0, 1])
+          cylinder(d1 = OuterD, d2 = InnerD, h = SlopeSpan);
+      }
     }
     cylinder(d = ShaftD, h = Height, $fn = ShaftFaces);
-    translate([InnerD / 4, 0, Height / 2])
-      rotate(90, [1, 0, 0])
-        cylinder(d = ThreadD, h = OuterD, center = true);
+    //Cord hole
+    if (Cord)      
+      translate([InnerD / 4, 0, Height / 2])
+        rotate(15, [1, 0, 0])
+          rotate(90, [1, 0, 0])
+            cylinder(d = ThreadD, h = OuterD, center = true);
+    
   }
 }
 
@@ -1046,7 +1061,7 @@ module PixelFloorPickerO1PlateLower(mount, m, HullBounds, Holes, Bearings)
                   cylinder(d = 34, h = 10);
                   translate([0, 0, -10])
                     rotate(90, [0, 0, 1])
-                      SpindleCore(InnerD = 30, OuterD = 34, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 0, ShaftFaces = 6, ThreadD = 3);
+                      SpindleCore(InnerD = 30, OuterD = 34, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 0, ShaftFaces = 6, ThreadD = 3, Center = true, Cord = true);
                 }
             }
           }
@@ -1441,8 +1456,8 @@ module DroneLauncherCarriageV2()
   difference()
   {
     //Core
-    translate([($DroneLauncherV2L / 2), 0, 4])
-      cube([$DroneLauncherV2L - 0.1, 40, 35], center = true);
+    translate([115, -20, -10])
+      cube([$DroneLauncherV2L - 115, 40, 35]);
     //Drone cutout
     translate([($DroneLauncherV2L / 2) - 15, 0, 23])
       cube([$DroneLauncherV2L - 0.1, 35, 30], center = true);
@@ -1460,10 +1475,14 @@ module DroneLauncherCarriageV2()
     //Rail slider
     translate([$DroneLauncherV1L / 2, 0, -1])
       cube([$DroneLauncherV2L, $DroneLauncherRailW + $DroneLauncherCarriageClearance, $DroneLauncherRailW + $DroneLauncherCarriageClearance], center = true);
-//    //Holder hole
-//    translate([$DroneLauncherV2L - 10, 0, 12])
-//      cube([30, 20, 5], center = true);
   }
+  //Side supports
+  translate([80, 13.32, 15.25])
+    rotate(8.8, [0, 0, 1])
+      cube([71.22, 2.5, 19.5], center = true);
+  translate([80, -13.32, 15.25])
+    rotate(-8.8, [0, 0, 1])
+      cube([71.22, 2.5, 19.5], center = true);
   //Holder pillars
   difference()
   {
@@ -1475,12 +1494,13 @@ module DroneLauncherCarriageV2()
   //Inside guides
   difference()
   {
-    translate([0, -10, 8])
+    translate([0, -10, 5.5])
       cube([50, 20, 35]);
-    translate([-1, 0, 25])
+    rotate(5, [0, 1, 0])
+    translate([-10, 0, 27])
       scale([1.0, 1.0, 1.8])
         rotate(45, [1, 0, 0])
-          cube([55, 20, 20]);
+          cube([75, 20, 20]);
   }
   
 }
@@ -1591,7 +1611,7 @@ module DroneLauncherPrint(Version = 2, ToPrint = 15)
     }
     else
     {
-      translate([-15, 50, 13.5])
+      translate([-15, 50, 10])
         DroneLauncherCarriageV2();
     }
   }
@@ -2967,21 +2987,24 @@ module FishboneGear(Teeth, Depth, Hub, ShaftShape = 1, ShaftD = $HexShaft8mmDSnu
 
 module LifterSpindle(style = 0)
 {
+  SpindleHeight = 18;
+  SpacerHeight = 18;
+  
   if (style == 1)
-    FTCLifterSpindle($SpindleDiameter = 30, $SpindleLength = 25, $SpindleType = 1, $ShaftType = 1, $ShaftDiameter = 8 + 0.4, Splitter = true);
+    FTCLifterSpindle($SpindleDiameter = 30, $SpindleLength = 25, $SpindleType = 1, $ShaftType = 1, $ShaftDiameter = $HexShaft8mmDSnug, Splitter = true);
   else if (style == 2)   
-    SpindleCore(InnerD = 20, OuterD = 24, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 8, ShaftFaces = 6, ThreadD = 3);
+    SpindleCore(InnerD = 30, OuterD = 40, Height = SpindleHeight, RimHeight = .2, SlopeSpan = 1.8, ShaftD = $HexShaft8mmDSnug, ShaftFaces = 6, ThreadD = 3, Center = LifterSpindleCenter, Cord = LifterSpindleCord);
   else if (style == 3)
   {
-    SpindleCore(InnerD = 30, OuterD = 35, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1.2, ShaftD = 8, ShaftFaces = 6, ThreadD = 3);
+    SpindleCore(InnerD = 30, OuterD = 40, Height = SpindleHeight, RimHeight = .2, SlopeSpan = 1.8, ShaftD = $HexShaft8mmDSnug, ShaftFaces = 6, ThreadD = 3, Center = LifterSpindleCenter, Cord = LifterSpindleCord);
     //Spacer
     rotate(180, [1, 0, 0])
       difference()
       {
-        cylinder(d = 20, h = 16);
-        cylinder(d = $HexShaft8mmDSnug, h = 16, $fn = 6);
+        cylinder(d = 16, h = SpacerHeight);
+        cylinder(d = $HexShaft8mmDSnug, h = SpacerHeight, $fn = 6);
         //Grub screw openings
-        translate([0, 0, 8])
+        translate([0, 0, SpacerHeight / 2])
           rotate(90, [1, 0, 0])
             cylinder(d = $M3ThreadedD, h = 30, center = true);
       }
@@ -3158,7 +3181,7 @@ module RevMount(orientation, dual)
 //CreatePlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
 //RailSupportPlate();
 //FTCLifterSpindle($SpindleDiameter = 30, $SpindleLength = 25, $SpindleType = 1, $ShaftType = 1, $ShaftDiameter = 8 + 0.4, Splitter = true);
-//SpindleCore(InnerD = 20, OuterD = 24, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 8, ShaftFaces = 6, ThreadD = 3);
+//SpindleCore(InnerD = 20, OuterD = 24, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 8, ShaftFaces = 6, ThreadD = 3, Center = true, Cord = true);
 //translate([0, 230, 0])
 //  Backdrop();
 
@@ -3189,6 +3212,8 @@ else if ($DisplaySelection == 20)
   Spacer(outer = SpacerOuter, inner = SpacerInner, sides = SpacerSides, thickness = SpacerThickness);
 else if ($DisplaySelection == 21)
   RevMount(orientation = RevMountOrientation, dual = RevMountDual);
+else if ($DisplaySelection == 22)
+  DroneLauncherPrint(Version = 2, ToPrint = 15);
 else
   CreatePlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
 
