@@ -13,7 +13,7 @@ use <Getriebe.scad>
 // sprocket(size, teeth, bore, hub_diameter, hub_height, guideangle);
 
 /* [Display selection] */
-$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor Gear, 15:Upper Conveyor Plate, 16:Lower Conveyor Plate, 17:Conveyor Gear Small Hex, 18:Conveyor Gear Small Bearing, 19:Lifter Spindle, 20:Spacer, 21:Rev Hub Mount, 22:Drone Launcher]
+$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor Gear, 15:Upper Conveyor Plate, 16:Lower Conveyor Plate, 17:Conveyor Gear Small Hex, 18:Conveyor Gear Small Bearing, 19:Lifter Spindle, 20:Spacer, 21:Rev Hub Mount, 22:Drone Launcher, 23:Lifter Hook, 24:Conveyor Guide]
 /* [Robot display] */
 RobotShowLifterSlide = true;//Lifter side slide
 RobotShowConveyorSlide = true;//Conveyor side slide
@@ -40,6 +40,12 @@ SpacerOuter = 13.5;
 SpacerInner = 8.35;
 SpacerSides = 6;
 SpacerThickness = 2.5;
+/* [Conveyor settings] */
+$ConveyorGuideWidth = 203;
+$ConveyorGuideSpacing = 15;
+$ConveyorGuideThickness = 3;
+$ConveyorGuideDiameter = 12;
+
 /* [Rev Mount setting] */
 RevMountOrientation = 0;
 RevMountDual = 0;
@@ -65,7 +71,7 @@ $M3ThreadedD = 3.00;
 $FlangeBearingDiameter = 14 + FlangeBearingDiameterCorrection;
 $FlangeBearingClearance = 16;
 
-$HexShaft8mmDSnug = 8.30;//8mm shaft
+$HexShaft8mmDSnug = 8.330;//8mm shaft
 
 $CChannelThickness = 2.4;
 $ChannelInsertBlockWidth = 43;
@@ -1398,8 +1404,8 @@ module PixelFloorPickerO1RollerPlug()
   {
     union()
     {
-      translate([0, 0, 2])
-        cylinder(d1 = 15.8, d2 = 15.4, h = 15);
+      translate([0, 0, 0])
+        cylinder(d1 = 16.0, d2 = 15.2, h = 15);
 //      cylinder(d = 21, h = 2);
     }
     cylinder(d = $HexShaft8mmDSnug, h = 20, $fn = 6);
@@ -1914,6 +1920,8 @@ module PixelConveyorArm(UpperLower = 0, length)
   $DriveGearSpacing = 48;
   $SupportHoleCount = 6;
   $SupportHoleSpacing = length/($SupportHoleCount + 1);
+  
+  echo("Conveyor support hole spacing = ", $SupportHoleSpacing);
   
   difference()
   {
@@ -2993,10 +3001,10 @@ module LifterSpindle(style = 0)
   if (style == 1)
     FTCLifterSpindle($SpindleDiameter = 30, $SpindleLength = 25, $SpindleType = 1, $ShaftType = 1, $ShaftDiameter = $HexShaft8mmDSnug, Splitter = true);
   else if (style == 2)   
-    SpindleCore(InnerD = 30, OuterD = 40, Height = SpindleHeight, RimHeight = .2, SlopeSpan = 1.8, ShaftD = $HexShaft8mmDSnug, ShaftFaces = 6, ThreadD = 3, Center = LifterSpindleCenter, Cord = LifterSpindleCord);
+    SpindleCore(InnerD = 26, OuterD = 40, Height = SpindleHeight, RimHeight = .2, SlopeSpan = 1.8, ShaftD = $HexShaft8mmDSnug, ShaftFaces = 6, ThreadD = 3, Center = LifterSpindleCenter, Cord = LifterSpindleCord);
   else if (style == 3)
   {
-    SpindleCore(InnerD = 30, OuterD = 40, Height = SpindleHeight, RimHeight = .2, SlopeSpan = 1.8, ShaftD = $HexShaft8mmDSnug, ShaftFaces = 6, ThreadD = 3, Center = LifterSpindleCenter, Cord = LifterSpindleCord);
+    SpindleCore(InnerD = 26, OuterD = 40, Height = SpindleHeight, RimHeight = .2, SlopeSpan = 2.7, ShaftD = $HexShaft8mmDSnug, ShaftFaces = 6, ThreadD = 3, Center = LifterSpindleCenter, Cord = LifterSpindleCord);
     //Spacer
     rotate(180, [1, 0, 0])
       difference()
@@ -3093,6 +3101,90 @@ module RevMount(orientation, dual)
   }
 }
 
+module Hook()
+{
+  HookRotation = 30;
+  Opening = 1.5 * $Inch2mm;
+  Width = .6 * $Inch2mm;
+  OuterD = Opening + Width + Width;
+  HookCenterD = (Opening + Width) / 2;
+  AttachLength = HookCenterD/tan(HookRotation);
+  CordAttachOffset = AttachLength/cos(HookRotation);
+ 
+  difference()
+  {
+    union()
+    {
+      //Main body
+      cylinder(d = OuterD, h = 1 - 0.01, center = true);
+      //Hook attach
+      rotate(-HookRotation, [0, 0, 1])
+        translate([HookCenterD, - (AttachLength / 2), 0])
+          cube([Width, AttachLength, 1 - 0.01], center = true);
+      //Vertical cord attach
+      translate([0, -CordAttachOffset, 0])
+        hull()
+        {
+          cylinder(d = Width, h = 1 - 0.01, center = true);
+          translate([0, -16, 0])
+            cylinder(d = Width, h = 1 - 0.01, center = true);
+        }
+    }
+    //Bar clearance
+    cylinder(d = Opening, h = 1, center = true);
+    //Bar opening
+    rotate(-HookRotation, [0, 0, 1])
+      translate([0, - 50 / 2, 0])
+        cube([Opening, 50, 1], center = true);
+    //Bar catch slope
+    translate([-(OuterD / 2), -(OuterD / 5), 0])
+      rotate(-40, [0, 0, 1])
+        translate([0, 0, 0])
+          cube([OuterD / 2, OuterD / 2, 1], center = true);
+ 
+    //Cord attach
+    translate([0, -CordAttachOffset - 16, 0])
+      cylinder(d = 3, h = 1, center = true);
+  }
+}
+
+module ConveyorGuide()
+{
+  difference()
+  {
+    union()
+    {
+      rotate(90, [0, 1, 0])
+        cylinder(d = $ConveyorGuideDiameter, h = $ConveyorGuideWidth, center = true);
+      for (i = [0:5])
+      {
+        translate([(i + .5) * $ConveyorGuideSpacing, 0, 10])
+          hull()
+          {
+            translate([0, (($ConveyorGuideDiameter - $ConveyorGuideThickness)/ 2), 0])
+              cylinder(d= $ConveyorGuideThickness, h = 20, center = true);
+            translate([0, -(($ConveyorGuideDiameter - $ConveyorGuideThickness)/ 2), 0])
+              cylinder(d= $ConveyorGuideThickness, h = 20, center = true);
+          }
+        translate([(-i - .5) * $ConveyorGuideSpacing, 0, 10])
+          hull()
+          {
+            translate([0, (($ConveyorGuideDiameter - $ConveyorGuideThickness)/ 2), 0])
+              cylinder(d= $ConveyorGuideThickness, h = 20, center = true);
+            translate([0, -(($ConveyorGuideDiameter - $ConveyorGuideThickness)/ 2), 0])
+              cylinder(d= $ConveyorGuideThickness, h = 20, center = true);
+          }
+      }
+    }
+    rotate(90, [0, 1, 0])
+      cylinder(d = $M3ThreadedD - .05, h = $ConveyorGuideWidth + 1, center = true);
+  }
+/*
+  translate([0, 200, 0])
+  rotate(90, [0, 1, 0])
+  PixelConveyorArm(UpperLower = 0, length = $FrontRollerDistanceLower);
+  */
+}
 //PixelFloorPickerO1Subsystem1();
 
 //PixelFloorPickerO1Subsystem2();
@@ -3200,7 +3292,7 @@ else if ($DisplaySelection == 12)
 else if ($DisplaySelection == 13)
   PixelFloorPickerO1RollerPlug();
 else if ($DisplaySelection == 14)
-  FishboneGear(Teeth = 48, Depth = 9, Hub = 20);
+  FishboneGear(Teeth = 48, Depth = 9, Hub = 16);
 else if ($DisplaySelection == 17)
   ConveyorTransferGear( type = 0);
 else if ($DisplaySelection == 18)
@@ -3214,8 +3306,15 @@ else if ($DisplaySelection == 21)
   RevMount(orientation = RevMountOrientation, dual = RevMountDual);
 else if ($DisplaySelection == 22)
   DroneLauncherPrint(Version = 2, ToPrint = 15);
+else if ($DisplaySelection == 23)
+  projection(cut = false)
+    Hook();
+else if ($DisplaySelection == 24)
+  ConveyorGuide();
 else
   CreatePlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
 
 if (RobotShowBoundingBoxSmall)
   BoundingBox();
+
+
