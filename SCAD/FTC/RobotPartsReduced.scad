@@ -13,7 +13,7 @@ use <Getriebe.scad>
 // sprocket(size, teeth, bore, hub_diameter, hub_height, guideangle);
 
 /* [Display selection] */
-$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor Gear, 15:Upper Conveyor Plate, 16:Lower Conveyor Plate, 17:Conveyor Gear Small Hex, 18:Conveyor Gear Small Bearing, 19:Lifter Spindle, 20:Spacer, 21:Rev Hub Mount, 22:Drone Launcher, 23:Lifter Hook, 24:Conveyor Guide]
+$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor Gear, 15:Upper Conveyor Plate, 16:Lower Conveyor Plate, 17:Conveyor Gear Small Hex, 18:Conveyor Gear Small Bearing, 19:Lifter Spindle, 20:Spacer, 21:Rev Hub Mount, 22:Drone Launcher, 23:Lifter Hook, 24:Conveyor Guide, 25:Hopper Pixel Funnel, 26:Dual Hopper]
 /* [Robot display] */
 RobotShowLifterSlide = true;//Lifter side slide
 RobotShowConveyorSlide = true;//Conveyor side slide
@@ -131,7 +131,7 @@ $DroneLauncherV2ExtensionCutout = 110;
 //Pixel hopper 
 hopperlowerwidth = 20;
 hopperupperwidth = 30;
-hopperheight = 90;
+hopperheight = 120;
 hopperwallthickness = 2;
 hopperhingeblocksize = 10;
 hoppersinglewidth = 90;
@@ -1778,9 +1778,9 @@ module HopperOpening(wl = 20, wu = 30, l = 95, h = 100)
 
 module DualHopperOpening(wl = 20, wu = 30, l = 95, h = 100)
 {
-  translate([0, (l + 4) / 2, 0])
+  translate([0, (l + 2) / 2, 0])
     HopperOpening(wl = wl, wu = wu, l = l, h = h);
-  translate([0, -((l + 4) / 2), 0])
+  translate([0, -((l + 2) / 2), 0])
     HopperOpening(wl = wl, wu = wu, l = l, h = h);
 }
 
@@ -1807,7 +1807,7 @@ module DualHopperBin(showservo)
         union()
         {
           //Outer frame
-          HopperOpening(wl = hopperlowerwidth + (hopperwallthickness * 2), wu = hopperupperwidth + (hopperwallthickness * 2), l = DualHopperWidth , h = hopperheight - 0.1);
+          HopperOpening(wl = hopperlowerwidth + (hopperwallthickness * 2), wu = hopperupperwidth + (hopperwallthickness * 2), l = DualHopperWidth , h = hopperheight - 0.1 + 0);
           //Servo support blocks
           translate([-22.3, -21, 21.2])
             ServoMountPillar();
@@ -1815,6 +1815,10 @@ module DualHopperBin(showservo)
             mirror([0, 0, 1])
               ServoMountPillar();
         }
+        //Scoop shaping
+        translate([0, 0, hopperheight + 10])
+          rotate(-42, [0, 1, 0])
+            cube([70, DualHopperWidth + 5, 30], center = true);
         //Pixel cutout
         translate([0, 0, -0.1])
           DualHopperOpening(wl = hopperlowerwidth, wu = hopperupperwidth, l = hoppersinglewidth, h = hopperheight + 1);
@@ -1839,9 +1843,6 @@ module DualHopperBin(showservo)
             rotate(-90, [0, 0, 1])      
               import("GoBildaServoLoRes.stl");
     }
-    color("DeepSkyBlue")
-      translate([-20, 0, 4])
-        DualHopperGate();
   }
 }
 
@@ -2680,7 +2681,7 @@ module DriveBase(FrontOffset = 0, BackOffset = 0, HHoles = 7, VHoles = 17, Front
 module DualHopperGate()
 {
   //Lower gate
-  translate([17, 0, -hopperheight + 2])
+  translate([17, 0, -90 + 2])
     cube([hopperlowerwidth, hoppersinglewidth, 3], center = true);
   //Gate lower support
   hull()
@@ -2689,10 +2690,10 @@ module DualHopperGate()
     translate([0, 0, -70])
       cube([3, 4, 4], center = true);
     //Left lower
-    translate([5.5, (hoppersinglewidth - 4) / 2, -hopperheight + 2.5])
+    translate([5.5, (hoppersinglewidth - 4) / 2, -90 + 2.5])
       cube([3, 4, 4], center = true);
     //right lower
-    translate([5.5, -(hoppersinglewidth - 4) / 2, -hopperheight + 2.5])
+    translate([5.5, -(hoppersinglewidth - 4) / 2, -90 + 2.5])
       cube([3, 4, 4], center = true);
   }
   //Gate servo attach
@@ -2967,6 +2968,10 @@ module HopperAndArms()
         rotate(-90 + upperpartialangle + lowerpartialangle, [1, 0, 0])
         {
           DualHopperBin(showservo = true);
+          rotate(90, [0, 0, 1])
+            color("DeepSkyBlue")
+              translate([-20, 0, 4])
+              DualHopperGate();
         }
       }
     }
@@ -2980,9 +2985,75 @@ module HopperAndArms()
   }
 }
 
+module PixelFunnelSideSupport()
+{
+  difference()
+  {
+    union()
+    {
+      hull()
+      {
+        translate([0, 19.5 - 5, -1.5])
+          cube([3, 44, .1], center = true);
+        translate([0, 10 - 5, 60])
+          cube([3, 25, .1], center = true);
+      }
+        //Back plate attach
+        hull()
+        {
+          translate([0, 0, 30])
+            cube([3, 15, .1], center = true);
+          translate([0, 0, 50])
+            cube([20, 15, .1], center = true);
+          translate([0, 0, 72])
+            cube([20, 15, .1], center = true);
+        }
+      }
+    //Mount hole
+    translate([0, 0, 65])
+      rotate(90, [1, 0, 0])
+        cylinder(d = 4.5, h = 30, center = true);
+    //Back plate slot
+    translate([0, 0, 70])
+      cube([30, 6, 40], center = true);
+  }
+}
+
+module HopperPixelFunnel()
+{
+  FunnelWidth = 175;
+  FunnelLength = 85;
+  
+  translate([0, 0, -40])
+  {
+    //Main ramp
+    translate([0, -5, 0])
+      cube([FunnelWidth, FunnelLength, 3], center = true);
+    //Side supports
+    //Slider side
+    translate([((FunnelWidth + 3)/ 2), 0, 0])
+    {
+      difference()
+      {
+        PixelFunnelSideSupport();
+        //Servo clearance
+        translate([-20, 0, 58])
+        cube([40, 40, 40]);
+      }
+    }
+    //Conveyor side
+    translate([(-(FunnelWidth + 3)/ 2), 0, 0])
+    {
+      PixelFunnelSideSupport();
+    }
+  }
+}
+
+
 module HopperSubsystem()
 {
   HopperBaseMount(showservo = true);
+  HopperPixelFunnel();
   HopperAndArms();
 }
 
@@ -3311,6 +3382,10 @@ else if ($DisplaySelection == 23)
     Hook();
 else if ($DisplaySelection == 24)
   ConveyorGuide();
+else if ($DisplaySelection == 25)
+  HopperPixelFunnel();
+else if ($DisplaySelection == 26)
+  DualHopperBin();
 else
   CreatePlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
 
