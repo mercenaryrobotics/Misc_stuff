@@ -13,7 +13,7 @@ use <Getriebe.scad>
 // sprocket(size, teeth, bore, hub_diameter, hub_height, guideangle);
 
 /* [Display selection] */
-$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor Gear, 15:Upper Conveyor Plate, 16:Lower Conveyor Plate, 17:Conveyor Gear Small Hex, 18:Conveyor Gear Small Bearing, 19:Lifter Spindle, 20:Spacer, 21:Rev Hub Mount, 22:Drone Launcher, 23:Lifter Hook, 24:Conveyor Guide, 25:Hopper Pixel Funnel, 26:Dual Hopper]
+$DisplaySelection = -1;//[-1:Nothing, 0:Robot, 1:Return Pulley, 2:Regular Pulley, 3:Tieof Plate, 4:Coupler Plate(N/U), 5:Motor Mount(N/U), 6:8mm Double Spacer, 7:16mm Double Spacer, 8:8mm 5x Spacer, 9:8mm 3x Spacer, 10:Slide Pulley Guide, 11:Rail Support, 12:Hopper Base, 13:Roller plug, 14:Conveyor Gear, 15:Upper Conveyor Plate, 16:Lower Conveyor Plate, 17:Conveyor Gear Small Hex, 18:Conveyor Gear Small Bearing, 19:Lifter Spindle, 20:Spacer, 21:Rev Hub Mount, 22:Drone Launcher, 23:Lifter Hook, 24:Conveyor Guide, 25:Hopper Pixel Funnel, 26:Dual Hopper, 27:Roller Flipper]
 /* [Robot display] */
 RobotShowLifterSlide = true;//Lifter side slide
 RobotShowConveyorSlide = true;//Conveyor side slide
@@ -41,7 +41,7 @@ SpacerInner = 8.35;
 SpacerSides = 6;
 SpacerThickness = 2.5;
 /* [Conveyor settings] */
-$ConveyorGuideWidth = 203;
+$ConveyorGuideWidth = 203.1;
 $ConveyorGuideSpacing = 15;
 $ConveyorGuideThickness = 3;
 $ConveyorGuideDiameter = 12;
@@ -1479,8 +1479,8 @@ module DroneLauncherCarriageV2()
     translate([$DroneLauncherV2ExtensionCutout + 30, -10,  -34.5 + 15])
         cylinder(d = 3, h = 12);
     //Rail slider
-    translate([$DroneLauncherV1L / 2, 0, -1])
-      cube([$DroneLauncherV2L, $DroneLauncherRailW + $DroneLauncherCarriageClearance, $DroneLauncherRailW + $DroneLauncherCarriageClearance], center = true);
+    translate([$DroneLauncherV1L - 40, 0, -1])
+      cube([70, $DroneLauncherRailW + $DroneLauncherCarriageClearance, $DroneLauncherRailW + $DroneLauncherCarriageClearance + .1], center = true);
   }
   //Side supports
   translate([80, 13.32, 15.25])
@@ -1511,7 +1511,7 @@ module DroneLauncherCarriageV2()
   
 }
  
-module DroneLauncherCap()
+module DroneLauncherBase()
 {
   difference()
   {
@@ -1536,6 +1536,9 @@ module DroneLauncherCap()
     //Latch cutout
     translate([5, 0, 22])
       cube([21, 6, 26], center = true);
+    translate([4, 0, 22])
+      rotate(18, [0, 1, 0])
+        cube([40, 6, 27], center = true);
     //Gripper mount holes
     translate([3, 8, 30])
       cylinder(d = 4, h = 20);
@@ -1561,7 +1564,7 @@ module DroneLauncherFrontCap()
   rotate(180, [0, 0, 1])
     difference()
     {
-      DroneLauncherCap();
+      DroneLauncherBase();
       translate([0, 0, 30])
         cube([50, 50, 50], center = true);
     }
@@ -1573,7 +1576,7 @@ module DroneLauncher(Version = 2)
     DroneLauncherRailProfile(Width = $DroneLauncherRailW, Height = $DroneLauncherRailW, Thickness = $DroneLauncherRailThickness, Length = $DroneLauncherRailL);
   //Rear cap
   translate([$DroneLauncherRailL - 5, 0, 0])
-    DroneLauncherCap();
+    DroneLauncherBase();
   //Front cap
   translate([0, 0, 0])
     DroneLauncherFrontCap();
@@ -1599,7 +1602,7 @@ module DroneLauncherPrint(Version = 2, ToPrint = 15)
   {
     translate([100, 10, 15])
       rotate(90, [0, 1, 0])
-        DroneLauncherCap();
+        DroneLauncherBase();
   }
   
   if (and(ToPrint, 2) != 0)
@@ -3248,14 +3251,31 @@ module ConveyorGuide()
       }
     }
     rotate(90, [0, 1, 0])
-      cylinder(d = $M3ThreadedD - .05, h = $ConveyorGuideWidth + 1, center = true);
+      cylinder(d = $M3ThreadedD - .25, h = $ConveyorGuideWidth + 1, center = true);
   }
+  
 /*
   translate([0, 200, 0])
   rotate(90, [0, 1, 0])
   PixelConveyorArm(UpperLower = 0, length = $FrontRollerDistanceLower);
   */
 }
+
+module RollerFlipper()
+{
+  difference()
+  {
+    cylinder(d = 24, h = 3);
+    cylinder(d = 20, h = 3);
+  }
+  for (i = [0:10])
+  {
+    rotate(i * (360/11), [0, 0, 1])
+      translate([22 / 2, -1, 0])
+        cube([5, 2, 3]);
+  }
+}
+
 //PixelFloorPickerO1Subsystem1();
 
 //PixelFloorPickerO1Subsystem2();
@@ -3376,7 +3396,7 @@ else if ($DisplaySelection == 20)
 else if ($DisplaySelection == 21)
   RevMount(orientation = RevMountOrientation, dual = RevMountDual);
 else if ($DisplaySelection == 22)
-  DroneLauncherPrint(Version = 2, ToPrint = 15);
+  DroneLauncherPrint(Version = 2, ToPrint = 1);//15
 else if ($DisplaySelection == 23)
   projection(cut = false)
     Hook();
@@ -3386,10 +3406,11 @@ else if ($DisplaySelection == 25)
   HopperPixelFunnel();
 else if ($DisplaySelection == 26)
   DualHopperBin();
+else if ($DisplaySelection == 27)
+  RollerFlipper();
 else
   CreatePlate(show = $DisplaySelection, stages = 2, returnstyle = 0, offset = 10, width = 14);
 
 if (RobotShowBoundingBoxSmall)
   BoundingBox();
-
 
