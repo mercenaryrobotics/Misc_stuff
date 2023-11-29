@@ -3265,14 +3265,14 @@ module RollerFlipper()
 {
   difference()
   {
-    cylinder(d = 24, h = 3);
+    cylinder(d = 23.2, h = 3);
     cylinder(d = 20, h = 3);
   }
   for (i = [0:10])
   {
     rotate(i * (360/11), [0, 0, 1])
       translate([22 / 2, -1, 0])
-        cube([5, 2, 3]);
+        cube([5, 1.2, 3]);
   }
 }
 
