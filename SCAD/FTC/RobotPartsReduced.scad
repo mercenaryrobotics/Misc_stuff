@@ -1819,8 +1819,8 @@ module DualHopperBin(showservo)
               ServoMountPillar();
         }
         //Scoop shaping
-        translate([0, 0, hopperheight + 10])
-          rotate(-42, [0, 1, 0])
+        translate([-10, 0, hopperheight - 5])
+          rotate(-50, [0, 1, 0])
             cube([70, DualHopperWidth + 5, 30], center = true);
         //Pixel cutout
         translate([0, 0, -0.1])
@@ -3051,7 +3051,6 @@ module HopperPixelFunnel()
     }
   }
 }
-
 
 module HopperSubsystem()
 {
