@@ -1541,9 +1541,9 @@ module DroneLauncherBase()
         cube([40, 6, 27], center = true);
     //Gripper mount holes
     translate([3, 8, 30])
-      cylinder(d = 4, h = 20);
+      cylinder(d = $M4ThreadedD - .1, h = 20);
     translate([3, -8, 30])
-      cylinder(d = 4, h = 20);
+      cylinder(d = $M4ThreadedD - .1, h = 20);
   }
 }
  
@@ -3031,7 +3031,14 @@ module HopperPixelFunnel()
   {
     //Main ramp
     translate([0, -5, 0])
-      cube([FunnelWidth, FunnelLength, 3], center = true);
+      difference()
+      {
+        cube([FunnelWidth, FunnelLength, 3], center = true);
+        translate([(FunnelWidth - 10) / 2, -(FunnelLength - 30) / 2, 0])
+          cube([10, 30, 5], center = true);
+        translate([-(FunnelWidth - 10) / 2, -(FunnelLength - 30) / 2, 0])
+          cube([10, 30, 5], center = true);
+      }
     //Side supports
     //Slider side
     translate([((FunnelWidth + 3)/ 2), 0, 0])
@@ -3041,7 +3048,7 @@ module HopperPixelFunnel()
         PixelFunnelSideSupport();
         //Servo clearance
         translate([-20, 0, 58])
-        cube([40, 40, 40]);
+          cube([40, 40, 40]);
       }
     }
     //Conveyor side
@@ -3069,7 +3076,7 @@ module FishboneGear(Teeth, Depth, Hub, ShaftShape = 1, ShaftD = $HexShaft8mmDSnu
 module LifterSpindle(style = 0)
 {
   SpindleHeight = 18;
-  SpacerHeight = 18;
+  SpacerHeight = 16;
   
   if (style == 1)
     FTCLifterSpindle($SpindleDiameter = 30, $SpindleLength = 25, $SpindleType = 1, $ShaftType = 1, $ShaftDiameter = $HexShaft8mmDSnug, Splitter = true);
@@ -3077,7 +3084,7 @@ module LifterSpindle(style = 0)
     SpindleCore(InnerD = 26, OuterD = 40, Height = SpindleHeight, RimHeight = .2, SlopeSpan = 1.8, ShaftD = $HexShaft8mmDSnug, ShaftFaces = 6, ThreadD = 3, Center = LifterSpindleCenter, Cord = LifterSpindleCord);
   else if (style == 3)
   {
-    SpindleCore(InnerD = 26, OuterD = 40, Height = SpindleHeight, RimHeight = .2, SlopeSpan = 2.7, ShaftD = $HexShaft8mmDSnug, ShaftFaces = 6, ThreadD = 3, Center = LifterSpindleCenter, Cord = LifterSpindleCord);
+    SpindleCore(InnerD = 20, OuterD = 30, Height = SpindleHeight, RimHeight = .2, SlopeSpan = 2.7, ShaftD = $HexShaft8mmDSnug, ShaftFaces = 6, ThreadD = 3, Center = LifterSpindleCenter, Cord = LifterSpindleCord);
     //Spacer
     rotate(180, [1, 0, 0])
       difference()
