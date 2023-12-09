@@ -22,6 +22,9 @@ RobotShowHopper = true;//Pixel hopper
 RobotShowDrivebase = true;//Drive base
 RobotShowLowerConveyor = true;//Lower conveyor
 RobotShowUpperConveyor = true;//Upper conveyor
+RobotShowGuideSpacers = true;
+RobotShowOuterGuides = true;//Outer pixel guides
+RobotShowInnerGuide = true;//Inner centerline pixel guide
 RobotShowConveyorBands = true;
 RobotShowBoundingBoxSmall = false;
 RobotLifterSpindleStyle = 3;
@@ -109,6 +112,9 @@ $ArmLength = 17.9 * $Inch2mm;
 $ArmAngleIdle = 44.7;
 $ArmAngle = 0;
 $GrabberAngle = 25;
+
+$DriveGearSpacing = 48;
+$SupportHoleCount = 6;
 
 $PixelFloorPickerO1MountBlockRotation = 20;
 $FrontRollerDistanceLower = 360;
@@ -1405,10 +1411,11 @@ module PixelFloorPickerO1RollerPlug()
     union()
     {
       translate([0, 0, 0])
-        cylinder(d1 = 16.0, d2 = 15.2, h = 15);
-//      cylinder(d = 21, h = 2);
+//        cylinder(d1 = 16.0, d2 = 15.2, h = 15);1/2" PVC
+        cylinder(d1 = 21.1, d2 = 20.2, h = 15);//3/4" PVC
     }
-    cylinder(d = $HexShaft8mmDSnug, h = 20, $fn = 6);
+    cylinder(d = $HexShaft8mmDSnug + .1, h = 20, $fn = 6);//8mm hex mount
+//    cylinder(d = 3.9, h = 50);//M4 mount
   }
 }
 
@@ -1921,8 +1928,6 @@ module PixelFloorPickerO2(supportspacing, position, offset, stages, width)
 
 module PixelConveyorArm(UpperLower = 0, length)
 {
-  $DriveGearSpacing = 48;
-  $SupportHoleCount = 6;
   $SupportHoleSpacing = length/($SupportHoleCount + 1);
   
   echo("Conveyor support hole spacing = ", $SupportHoleSpacing);
@@ -2001,6 +2006,16 @@ module PixelConveyor(conveyorwidth, conveyorlength, upperlower)
             cylinder(d = 20, h = conveyorwidth, center = true);
         }
       }
+
+      $SupportHoleSpacing = conveyorlength/($SupportHoleCount + 1);
+      if (RobotShowGuideSpacers)
+        for (i = [0:$SupportHoleCount])
+        {
+          translate([0, -$SupportHoleSpacing * i, 0])
+            rotate(180 * (1 - upperlower), [1, 0,0])
+              ConveyorGuide();
+        }
+
       color("Goldenrod")
       //Move to leading roller center
       if (RobotShowConveyorBands)
@@ -2046,6 +2061,25 @@ module FullRobotV2(supportspacing, offset, stages, width)
       rotate(50, [1, 0, 0])
         rotate(-90, [0, 0, 1])
           DroneLauncher();
+
+  if (RobotShowOuterGuides)
+  {
+    translate([103, 34.75, 303.83])
+      rotate(-$PixelConveyorAngle + 3, [1, 0, 0])
+        rotate(90, [0, 1, 0])
+          PixelGuideOuter(1);
+    translate([-103, 34.75, 303.83])
+      rotate(-$PixelConveyorAngle + 3, [1, 0, 0])
+        rotate(90, [0, 1, 0])
+          PixelGuideOuter(1);
+  }
+
+  if (RobotShowInnerGuide)
+    translate([0, 71.2, 272.6])
+      rotate(-$PixelConveyorAngle, [1, 0, 0])
+        rotate(90, [0, 1, 0])
+          PixelGuideInner(0);
+
 }
 
 module PixelFloorPickerO2HopperArm(position, offset, stages, width, motorposition, channelholes, offsetholes, dopulleyguide, spindleoffset = 24 + 4 + 16, mechtype)
@@ -3149,13 +3183,13 @@ module RevMount(orientation, dual)
       for (i = [0:2])
       {
         translate([32 - baseoffset, i * 24, 10 - 4.9])
-          BoltCountersink(holed = 4.5, headd = 7.5, headh = 4, sides = 20);
+          BoltCountersink(holed = 4.6, headd = 7.5, headh = 4, sides = 20);
         translate([32 - baseoffset, -i * 24, 10 - 4.9])
-          BoltCountersink(holed = 4.5, headd = 7.5, headh = 4, sides = 20);
+          BoltCountersink(holed = 4.6, headd = 7.5, headh = 4, sides = 20);
         translate([-32 - baseoffset, i * 24, 10 - 4.9])
-          BoltCountersink(holed = 4.5, headd = 7.5, headh = 4, sides = 20);
+          BoltCountersink(holed = 4.6, headd = 7.5, headh = 4, sides = 20);
         translate([-32 - baseoffset, -i * 24, 10 - 4.9])
-          BoltCountersink(holed = 4.5, headd = 7.5, headh = 4, sides = 20);
+          BoltCountersink(holed = 4.6, headd = 7.5, headh = 4, sides = 20);
       }
     }
   }
@@ -3281,6 +3315,63 @@ module RollerFlipper()
         cube([5, 1.2, 3]);
   }
 }
+
+module IntakeSpacer()
+{difference()
+  {
+    hull()
+    {
+      translate([-15, 0, 0])
+        cylinder(d = 15, h = 13);
+      translate([7, 0, 0])
+        cylinder(d = 15, h = 13);
+    }
+    translate([-16, 0, 9])
+      cube([20, 30, 3.5], center = true);
+  }
+}
+
+module PixelGuideOuter(UpperLower = 0)
+{
+  //NOTE : Only upper version checked at the moment!!
+  PrimaryConveyorLength = (UpperLower == 0) ? $FrontRollerDistanceLower : $FrontRollerDistanceUpper;
+  PrimarySupportHoleSpacing = PrimaryConveyorLength/($SupportHoleCount + 1);
+
+  SecondaryConveyorLength = (UpperLower == 0) ? $FrontRollerDistanceUpper : $FrontRollerDistanceLower;
+  SecondarySupportHoleSpacing = SecondaryConveyorLength/($SupportHoleCount + 1);
+  
+  difference()
+  {
+      hull()
+      {
+        //Upper back
+        translate([0, -40, 0])
+          cylinder(d = 22, h = 1, center = true);
+        //Upper front
+        translate([0, -PrimaryConveyorLength + PrimarySupportHoleSpacing, 0])
+          cylinder(d = 18, h = 1, center = true);
+        //Lower back
+        translate([30, -40, 0])
+          cylinder(d = 22, h = 1, center = true);
+        //Lower front
+        translate([25, -PrimaryConveyorLength + PrimarySupportHoleSpacing, 0])
+          cylinder(d = 18, h = 1, center = true);
+      }      
+      //Holes for primary band guide supports
+    for (i = [1:$SupportHoleCount])
+    {
+      translate([0, -PrimarySupportHoleSpacing * i, 0])
+        cylinder(d = 9, h = 3.6, center = true);
+    }
+      //Gaps for primary band guide supports
+    for (i = [1:$SupportHoleCount])
+    {
+      translate([45 - (i * 1.7), -SecondarySupportHoleSpacing * i, 0])
+        cylinder(d = 15 + (i * 1), h = 3.6, center = true);
+    }
+  }
+}
+
 
 //PixelFloorPickerO1Subsystem1();
 
@@ -3419,4 +3510,84 @@ else
 
 if (RobotShowBoundingBoxSmall)
   BoundingBox();
+
+//Extras
+/*
+translate([92, -120, 100])
+  rotate(-$PixelConveyorAngle + 3, [1, 0, 0])
+    rotate(90, [0, 1, 0])
+      IntakeSpacer();
+
+
+*/
+
+
+module ConveyorGuideClip()
+{
+  difference()
+  {
+    hull()
+    {
+      cylinder(d = 14, h = 10, center = true);
+      cylinder(d = 18, h = 1, center = true);
+    }
+    cylinder(d = 12.5, h = 13, center = true);
+    translate([11, 0, 0])
+    cube([20, 20, 20], center = true);
+  }
+}
+
+module PixelGuideInner(UpperLower = 0)
+{
+  //NOTE : Only lower version checked at the moment!!
+  PrimaryConveyorLength = (UpperLower == 0) ? $FrontRollerDistanceLower : $FrontRollerDistanceUpper;
+  PrimarySupportHoleSpacing = PrimaryConveyorLength/($SupportHoleCount + 1);
+
+  SecondaryConveyorLength = (UpperLower == 0) ? $FrontRollerDistanceUpper : $FrontRollerDistanceLower;
+  SecondarySupportHoleSpacing = SecondaryConveyorLength/($SupportHoleCount + 1);
+  
+  difference()
+  {
+      hull()
+      {
+        //Lower back
+        translate([-10, -25, 0])
+          cylinder(d = 22, h = 1, center = true);
+        //Lower front
+        translate([-10, -PrimaryConveyorLength + PrimarySupportHoleSpacing - 25, 0])
+          cylinder(d = 22, h = 1, center = true);
+        //Upper back
+        translate([-18, -40, 0])
+          cylinder(d = 22, h = 1, center = true);
+        //Upper front
+        translate([-18, -PrimaryConveyorLength + PrimarySupportHoleSpacing, 0])
+          cylinder(d = 18, h = 1, center = true);
+      }      
+      //Holes for primary band guide supports
+    for (i = [1:$SupportHoleCount])
+    {
+      translate([0, -PrimarySupportHoleSpacing * i, 0])
+        cylinder(d = 12.5, h = 3.6, center = true);
+    }
+/*      //Gaps for primary band guide supports
+    for (i = [1:$SupportHoleCount])
+    {
+      translate([45 - (i * 1.7), -SecondarySupportHoleSpacing * i, 0])
+        cylinder(d = 15 + (i * 1), h = 3.6, center = true);
+    }
+    */
+  }
+  
+    for (i = [1:$SupportHoleCount])
+    {
+      translate([0, -PrimarySupportHoleSpacing * i, 0])
+      {
+//        rotate(90, [0, 1, 0])
+//          ConveyorGuide();
+        ConveyorGuideClip();
+      }
+    }
+  
+}
+
 
