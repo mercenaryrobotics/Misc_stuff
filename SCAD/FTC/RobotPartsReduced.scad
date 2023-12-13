@@ -27,6 +27,7 @@ RobotShowOuterGuides = true;//Outer pixel guides
 RobotShowInnerGuide = true;//Inner centerline pixel guide
 RobotShowConveyorBands = true;
 RobotShowBoundingBoxSmall = false;
+RobotShowBackboard = true;
 RobotLifterSpindleStyle = 3;
 ReturnPulleyStyle = 2;
 
@@ -47,7 +48,8 @@ SpacerThickness = 2.5;
 $ConveyorGuideWidth = 203.1;
 $ConveyorGuideSpacing = 15;
 $ConveyorGuideThickness = 3;
-$ConveyorGuideDiameter = 12;
+$ConveyorGuideDiameter = 15;
+
 
 /* [Rev Mount setting] */
 RevMountOrientation = 0;
@@ -143,10 +145,20 @@ hopperhingeblocksize = 10;
 hoppersinglewidth = 90;
 DualHopperWidth = (hoppersinglewidth * 2) + 3 + 5;
 hopperlinkagethickness = 6;
+
+//Linkage set 1
+//hopperlinkagebasespacing = 77;
+//hopperlinkagehopperspacing = 71;
+//hopperlinkagetoplength = 118;
+//hopperlinkagebottomlength = 130;
+
+//Linkage set 2
 hopperlinkagebasespacing = 77;
-hopperlinkagehopperspacing = 71;
-hopperlinkagetoplength = 118;
-hopperlinkagebottomlength = 130;
+hopperlinkagehopperspacing = 85;
+hopperlinkagetoplength = 138;
+hopperlinkagebottomlength = 160;
+
+
 hopperbaseplatethickness = 5;
 hopperbaseplateheight = 160;
 hopperbaseplatewidth = $DrivebaseInnerSpacing - 5;//Fit between vertical pillars
@@ -1924,6 +1936,11 @@ module PixelFloorPickerO2(supportspacing, position, offset, stages, width)
     if (RobotShowUpperConveyor)
       PixelConveyor(conveyorwidth = (supportspacing * 2) - 16, conveyorlength = $FrontRollerDistanceUpper, upperlower = 1);
   }
+  
+  if (RobotShowBackboard)
+    translate([0, 220, 0])
+      Backdrop();
+
 }
 
 module PixelConveyorArm(UpperLower = 0, length)
@@ -2354,7 +2371,7 @@ module MisumiPulleyReturnPlate(showpulley, holespacing, extension, voffset, widt
   
 }
 
-module Linkage(spacing, width, thickness, holed)
+module Linkage(spacing, width, thickness, holed, servo = false)
 {
   rotate(90, [0, 0, 1])
     rotate(90, [1, 0, 0])
@@ -2369,6 +2386,8 @@ module Linkage(spacing, width, thickness, holed)
         cylinder(d = holed, h = thickness + 1, center = true);
         translate([spacing, 0, 0])
           cylinder(d = holed, h = thickness + 1, center = true);
+        if (servo)
+          cylinder(d = 5.8, h = 3.5);
       }
 }
 
@@ -3008,7 +3027,7 @@ module HopperAndArms()
           rotate(90, [0, 0, 1])
             color("DeepSkyBlue")
               translate([-20, 0, 4])
-              DualHopperGate();
+                DualHopperGate();
         }
       }
     }
@@ -3022,7 +3041,7 @@ module HopperAndArms()
   }
 }
 
-module PixelFunnelSideSupport()
+module PixelFunnelSideSupportV1()
 {
   difference()
   {
@@ -3056,7 +3075,42 @@ module PixelFunnelSideSupport()
   }
 }
 
-module HopperPixelFunnel()
+module PixelFunnelSideSupport()
+{
+  difference()
+  {
+    union()
+    {
+      hull()
+      {
+        translate([0, 20.2 - 5, -14.56])
+          rotate(-9, [1, 0, 0])
+            cube([3, 44, .1], center = true);
+        translate([0, 10 - 5, 60])
+          cube([3, 25, .1], center = true);
+      }
+        //Back plate attach
+        hull()
+        {
+          translate([0, 0, 30])
+            cube([3, 15, .1], center = true);
+          translate([0, 0, 50])
+            cube([20, 15, .1], center = true);
+          translate([0, 0, 72])
+            cube([20, 15, .1], center = true);
+        }
+      }
+    //Mount hole
+    translate([0, 0, 65])
+      rotate(90, [1, 0, 0])
+        cylinder(d = 4.5, h = 30, center = true);
+    //Back plate slot
+    translate([0, 0, 70])
+      cube([30, 6, 40], center = true);
+  }
+}
+
+module HopperPixelFunnelV1()
 {
   FunnelWidth = 175;
   FunnelLength = 85;
@@ -3072,6 +3126,52 @@ module HopperPixelFunnel()
           cube([10, 30, 5], center = true);
         translate([-(FunnelWidth - 10) / 2, -(FunnelLength - 30) / 2, 0])
           cube([10, 30, 5], center = true);
+      }
+    //Side supports
+    //Slider side
+    translate([((FunnelWidth + 3)/ 2), 0, 0])
+    {
+      difference()
+      {
+        PixelFunnelSideSupportV1();
+        //Servo clearance
+        translate([-20, 0, 58])
+          cube([40, 40, 40]);
+      }
+    }
+    //Conveyor side
+    translate([(-(FunnelWidth + 3)/ 2), 0, 0])
+    {
+      PixelFunnelSideSupport();
+    }
+  }
+}
+
+module HopperPixelFunnel()
+{
+  FunnelWidth = 175;
+  FunnelLength = 117;
+  
+  translate([0, 0, -40])
+  {
+    //Main ramp
+    translate([0, 2, -11])
+      rotate(-9, [1, 0, 0])
+      {
+        difference()
+        {
+          cube([FunnelWidth, FunnelLength, 3], center = true);
+          translate([(FunnelWidth - 10) / 2, -(FunnelLength - 50) / 2, 0])
+            cube([10, 50, 5], center = true);
+          translate([-(FunnelWidth - 10) / 2, -(FunnelLength - 50) / 2, 0])
+            cube([10, 50, 5], center = true);
+        }
+        hull()
+        {
+          cube([3, FunnelLength, 1], center = true);
+          translate([0, -30, 57])
+            cube([3, FunnelLength , 1], center = true);
+        }
       }
     //Side supports
     //Slider side
@@ -3098,6 +3198,18 @@ module HopperSubsystem()
   HopperBaseMount(showservo = true);
   HopperPixelFunnel();
   HopperAndArms();
+  HopperPixelDiverter();
+}
+
+module HopperPixelDiverter()
+{
+  translate([0, -3.5, 20])
+  {
+    cube([155, 2, 15], center = true);
+    rotate(-25, [1, 0, 0])
+    translate([0, -22, -6.2])
+      cube([155, 50, 2], center = true);
+  }
 }
 
 module FishboneGear(Teeth, Depth, Hub, ShaftShape = 1, ShaftD = $HexShaft8mmDSnug)
@@ -3372,6 +3484,111 @@ module PixelGuideOuter(UpperLower = 0)
   }
 }
 
+module ConveyorGuideClip()
+{
+  difference()
+  {
+    hull()
+    {
+      cylinder(d = $ConveyorGuideDiameter + 2, h = 10, center = true);
+      cylinder(d = $ConveyorGuideDiameter + 4, h = 1, center = true);
+    }
+    cylinder(d = $ConveyorGuideDiameter + .2, h = 13, center = true);
+    translate([11, 0, 0])
+      cube([20, 20, 20], center = true);
+  }
+}
+
+module PixelGuideInner(UpperLower = 0)
+{
+  //NOTE : Only lower version checked at the moment!!
+  PrimaryConveyorLength = (UpperLower == 0) ? $FrontRollerDistanceLower : $FrontRollerDistanceUpper;
+  PrimarySupportHoleSpacing = PrimaryConveyorLength/($SupportHoleCount + 1);
+
+  SecondaryConveyorLength = (UpperLower == 0) ? $FrontRollerDistanceUpper : $FrontRollerDistanceLower;
+  SecondarySupportHoleSpacing = SecondaryConveyorLength/($SupportHoleCount + 1);
+  
+  difference()
+  {
+      hull()
+      {
+        //Lower back
+        translate([-10, -25, 0])
+          cylinder(d = 22, h = 1.6, center = true);
+        //Lower front
+        translate([-10, -PrimaryConveyorLength + PrimarySupportHoleSpacing - 10, 0])
+          cylinder(d = 22, h = 1.6, center = true);
+        //Upper back
+        translate([-18, -40, 0])
+          cylinder(d = 22, h = 1.6, center = true);
+        //Upper front
+        translate([-18, -PrimaryConveyorLength + PrimarySupportHoleSpacing, 0])
+          cylinder(d = 18, h = 1.6, center = true);
+      }      
+      //Holes for primary band guide supports
+    for (i = [1:$SupportHoleCount])
+    {
+      translate([0, -PrimarySupportHoleSpacing * i, 0])
+        cylinder(d = $ConveyorGuideDiameter + .2, h = 3.6, center = true);
+    }
+/*      //Gaps for primary band guide supports
+    for (i = [1:$SupportHoleCount])
+    {
+      translate([45 - (i * 1.7), -SecondarySupportHoleSpacing * i, 0])
+        cylinder(d = 15 + (i * 1), h = 3.6, center = true);
+    }
+    */
+  }
+  
+    for (i = [1:$SupportHoleCount])
+    {
+      translate([0, -PrimarySupportHoleSpacing * i, 0])
+      {
+//        rotate(90, [0, 1, 0])
+//          ConveyorGuide();
+        ConveyorGuideClip();
+      }
+    }
+  
+}
+
+module IntakeExpander()
+{
+  difference()
+  {
+    cylinder(d = 34, h = 203/4);
+    cylinder(d = 21.6, h = 203/4);
+    translate([-25, 0, 0])
+    cube([50, 50, 100]);
+  }
+}
+
+module PrintLinkages()
+{
+  rotate(-90, [0, 1, 0])
+  {
+    translate([0, 0, 12 * 0])
+      Linkage(spacing = hopperlinkagebottomlength, width = 10, thickness = 6, holed = 4.2);
+    translate([0, 0, 12 * 1])
+      Linkage(spacing = hopperlinkagebottomlength, width = 10, thickness = 6, holed = 4.2);
+    translate([0, 0, 12 * 2])
+      Linkage(spacing = hopperlinkagetoplength, width = 10, thickness = 6, holed = 4.2);
+    translate([0, 0, 12 * 3])
+      Linkage(spacing = hopperlinkagetoplength, width = 10, thickness = 6, holed = 4.2, servo = true);
+  }
+}
+
+module FunnelFix()
+{
+  hull()
+  {
+    rotate(-25, [0, 1, 0])
+      cube([1, 160, 30]);
+    translate([95, 0, 0])
+      cube([1, 160, 5]);
+  }
+}
+
 
 //PixelFloorPickerO1Subsystem1();
 
@@ -3462,8 +3679,6 @@ module PixelGuideOuter(UpperLower = 0)
 //RailSupportPlate();
 //FTCLifterSpindle($SpindleDiameter = 30, $SpindleLength = 25, $SpindleType = 1, $ShaftType = 1, $ShaftDiameter = 8 + 0.4, Splitter = true);
 //SpindleCore(InnerD = 20, OuterD = 24, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 8, ShaftFaces = 6, ThreadD = 3, Center = true, Cord = true);
-//translate([0, 230, 0])
-//  Backdrop();
 
 //PixelFloorPickerO2(actuatorangle = -20, supportspacing = 120, position = 00, offset = 10, stages = 2);
 //PixelFloorPickerO2HopperArm(actuatorangle = -20, position = 0, offset = 10, stages = 2, width = 15);
@@ -3518,76 +3733,14 @@ translate([92, -120, 100])
     rotate(90, [0, 1, 0])
       IntakeSpacer();
 
-
+IntakeExpander();
+PrintLinkages();
+HopperPixelFunnel();
+DualHopperGate();
+FunnelFix();
+HopperPixelDiverter();
+HopperPixelFunnel();
 */
 
-
-module ConveyorGuideClip()
-{
-  difference()
-  {
-    hull()
-    {
-      cylinder(d = 14, h = 10, center = true);
-      cylinder(d = 18, h = 1, center = true);
-    }
-    cylinder(d = 12.5, h = 13, center = true);
-    translate([11, 0, 0])
-    cube([20, 20, 20], center = true);
-  }
-}
-
-module PixelGuideInner(UpperLower = 0)
-{
-  //NOTE : Only lower version checked at the moment!!
-  PrimaryConveyorLength = (UpperLower == 0) ? $FrontRollerDistanceLower : $FrontRollerDistanceUpper;
-  PrimarySupportHoleSpacing = PrimaryConveyorLength/($SupportHoleCount + 1);
-
-  SecondaryConveyorLength = (UpperLower == 0) ? $FrontRollerDistanceUpper : $FrontRollerDistanceLower;
-  SecondarySupportHoleSpacing = SecondaryConveyorLength/($SupportHoleCount + 1);
-  
-  difference()
-  {
-      hull()
-      {
-        //Lower back
-        translate([-10, -25, 0])
-          cylinder(d = 22, h = 1, center = true);
-        //Lower front
-        translate([-10, -PrimaryConveyorLength + PrimarySupportHoleSpacing - 25, 0])
-          cylinder(d = 22, h = 1, center = true);
-        //Upper back
-        translate([-18, -40, 0])
-          cylinder(d = 22, h = 1, center = true);
-        //Upper front
-        translate([-18, -PrimaryConveyorLength + PrimarySupportHoleSpacing, 0])
-          cylinder(d = 18, h = 1, center = true);
-      }      
-      //Holes for primary band guide supports
-    for (i = [1:$SupportHoleCount])
-    {
-      translate([0, -PrimarySupportHoleSpacing * i, 0])
-        cylinder(d = 12.5, h = 3.6, center = true);
-    }
-/*      //Gaps for primary band guide supports
-    for (i = [1:$SupportHoleCount])
-    {
-      translate([45 - (i * 1.7), -SecondarySupportHoleSpacing * i, 0])
-        cylinder(d = 15 + (i * 1), h = 3.6, center = true);
-    }
-    */
-  }
-  
-    for (i = [1:$SupportHoleCount])
-    {
-      translate([0, -PrimarySupportHoleSpacing * i, 0])
-      {
-//        rotate(90, [0, 1, 0])
-//          ConveyorGuide();
-        ConveyorGuideClip();
-      }
-    }
-  
-}
 
 
