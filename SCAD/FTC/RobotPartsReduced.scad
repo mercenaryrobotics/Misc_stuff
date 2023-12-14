@@ -3172,6 +3172,10 @@ module HopperPixelFunnel()
           translate([0, -30, 57])
             cube([3, FunnelLength , 1], center = true);
         }
+        translate([(FunnelWidth / 4) - 4, 0, 1.5])
+          HopperPixelFunnelCurve();
+        translate([-(FunnelWidth / 4) + 4, 0, 1.5])
+          HopperPixelFunnelCurve();
       }
     //Side supports
     //Slider side
@@ -3198,7 +3202,7 @@ module HopperSubsystem()
   HopperBaseMount(showservo = true);
   HopperPixelFunnel();
   HopperAndArms();
-  HopperPixelDiverter();
+//  HopperPixelDiverter();
 }
 
 module HopperPixelDiverter()
@@ -3556,7 +3560,7 @@ module IntakeExpander()
 {
   difference()
   {
-    cylinder(d = 34, h = 203/4);
+    cylinder(d = 35, h = 203/4);
     cylinder(d = 21.6, h = 203/4);
     translate([-25, 0, 0])
     cube([50, 50, 100]);
@@ -3589,6 +3593,23 @@ module FunnelFix()
   }
 }
 
+module HopperPixelFunnelCurve()
+{
+  D = 280;
+  H = 12.8;
+  W = 75;
+  
+  translate([0, 0, -(D / 2) + H])
+  {
+    intersection()
+    {
+      rotate(90, [0, 1, 0])
+        cylinder(d = D, h = W, center = true, $fn = 500);
+      translate([-150, -150, (D / 2) - H])
+        cube([300, 300, 100]);
+    }
+  }
+}
 
 //PixelFloorPickerO1Subsystem1();
 
@@ -3743,4 +3764,4 @@ HopperPixelFunnel();
 */
 
 
-
+HopperPixelFunnelCurve();
