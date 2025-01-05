@@ -145,6 +145,7 @@ hopperhingeblocksize = 10;
 hoppersinglewidth = 90;
 DualHopperWidth = (hoppersinglewidth * 2) + 3 + 5;
 hopperlinkagethickness = 6;
+HopperGateHeightFudge = 14;
 
 //Linkage set 1
 //hopperlinkagebasespacing = 77;
@@ -153,17 +154,31 @@ hopperlinkagethickness = 6;
 //hopperlinkagebottomlength = 130;
 
 //Linkage set 2
+//hopperlinkagebasespacing = 77;
+//hopperlinkagehopperspacing = 85;
+//hopperlinkagetoplength = 138;
+//hopperlinkagebottomlength = 160;
+
+//Linkage set 3
 hopperlinkagebasespacing = 77;
 hopperlinkagehopperspacing = 85;
-hopperlinkagetoplength = 138;
-hopperlinkagebottomlength = 160;
-
+hopperlinkagetoplength = 133;
+hopperlinkagebottomlength = 155;
 
 hopperbaseplatethickness = 5;
 hopperbaseplateheight = 160;
 hopperbaseplatewidth = $DrivebaseInnerSpacing - 5;//Fit between vertical pillars
 hopperrotationxoffset = 15;
 hopperrotationyoffset = 59.85;//54.85;
+
+HexFlangeBearingDiameter = 1.125;
+FRCHorizontalLauncherRollerDiameter = 2;
+FRCHorizontalLauncherRollerSetSpacing = 1.75;
+FRCHorizontalLauncherRollerSpacing = 17;
+
+function InchToMM(I) = (I * 25.4);
+
+
 
 //Short version
 $PixelFloorPickerO1UpperHullLocations = [[($RollerDiameter / 2) + $PlateThickness + 40, 22, 0], 
@@ -1798,11 +1813,11 @@ module HopperOpening(wl = 20, wu = 30, l = 95, h = 100)
   }
 }
 
-module DualHopperOpening(wl = 20, wu = 30, l = 95, h = 100)
+module DualHopperOpening(wl = 20, wu = 30, l = 95, h = 100, Offset = 0)
 {
-  translate([0, (l + 2) / 2, 0])
+  translate([0, (l + 2 - Offset) / 2, 0])
     HopperOpening(wl = wl, wu = wu, l = l, h = h);
-  translate([0, -((l + 2) / 2), 0])
+  translate([0, -((l + 2 - Offset) / 2), 0])
     HopperOpening(wl = wl, wu = wu, l = l, h = h);
 }
 
@@ -1838,15 +1853,15 @@ module DualHopperBin(showservo)
               ServoMountPillar();
         }
         //Scoop shaping
-        translate([-10, 0, hopperheight - 5])
-          rotate(-50, [0, 1, 0])
+        translate([-16, 0, hopperheight - 5])
+          rotate(-65, [0, 1, 0])
             cube([70, DualHopperWidth + 5, 30], center = true);
         //Pixel cutout
         translate([0, 0, -0.1])
-          DualHopperOpening(wl = hopperlowerwidth, wu = hopperupperwidth, l = hoppersinglewidth, h = hopperheight + 1);
+          DualHopperOpening(wl = hopperlowerwidth, wu = hopperupperwidth, l = hoppersinglewidth-1.5, h = hopperheight + 1, Offset = 0);
         //Linkage mount holes
         //Lower hole
-        translate([0, 0, 10])
+        translate([0, 0, 6])
         {
           rotate(90, [1, 0, 0])
             cylinder(d = $M4NonThreadedD, h = DualHopperWidth + 2, center = true);
@@ -1860,7 +1875,7 @@ module DualHopperBin(showservo)
     if (showservo)
     {
       color("purple")
-        translate([-27.25, -4.5, -35.75])
+        translate([-27.25, -4.5, -35.75 - HopperGateHeightFudge])
           rotate(-90, [1, 0, 0])
             rotate(-90, [0, 0, 1])      
               import("GoBildaServoLoRes.stl");
@@ -2377,17 +2392,42 @@ module Linkage(spacing, width, thickness, holed, servo = false)
     rotate(90, [1, 0, 0])
       difference()
       {
-        hull()
+        union()
         {
-          cylinder(d = width, h = thickness, center = true);
-          translate([spacing, 0, 0])
+          hull()
+          {
             cylinder(d = width, h = thickness, center = true);
+            translate([spacing, 0, 0])
+              cylinder(d = width, h = thickness, center = true);
+          }
+          if (servo)
+          {
+            hull()
+            {
+              translate([0, 0, 1.5])
+                cylinder(d = 20, h = thickness + 3, center = true);
+              translate([33, 0, 1.5])
+                cylinder(d = 15, h = thickness + 3, center = true);
+            }
+          }
         }
-        cylinder(d = holed, h = thickness + 1, center = true);
+        cylinder(d = holed, h = thickness + 20, center = true);
         translate([spacing, 0, 0])
           cylinder(d = holed, h = thickness + 1, center = true);
         if (servo)
-          cylinder(d = 5.8, h = 3.5);
+        {
+          translate([32, 0, 0])
+            cylinder(d = 4.2, h = 20, center = true);
+          translate([0, 0, -2])
+            cylinder(d = 10.2, h = 4, center = true);
+          hull()
+          {
+            translate([0, 0, -2])
+              cylinder(d = 8.2, h = 4, center = true);
+            translate([32, 0, -2])
+              cylinder(d = 8.2, h = 4, center = true);
+          }
+        }
       }
 }
 
@@ -3018,15 +3058,15 @@ module HopperAndArms()
   {
     rotate(HopperArmAngle, [1, 0, 0])
     {
-      Linkage(spacing = hopperlinkagetoplength, width = 10, thickness = 6, holed = 4.2);
-      translate([-(DualHopperWidth / 2) - 3, hopperlinkagetoplength, 0])
+      Linkage(spacing = hopperlinkagetoplength, width = 10, thickness = 6, holed = 4.2, servo = true);
+      translate([-(DualHopperWidth / 2) - 3, hopperlinkagetoplength -4, -1])
       {
         rotate(-90 + upperpartialangle + lowerpartialangle, [1, 0, 0])
         {
           DualHopperBin(showservo = true);
           rotate(90, [0, 0, 1])
             color("DeepSkyBlue")
-              translate([-20, 0, 4])
+              translate([-20, 0, 4 - HopperGateHeightFudge])
                 DualHopperGate();
         }
       }
@@ -3083,11 +3123,11 @@ module PixelFunnelSideSupport()
     {
       hull()
       {
-        translate([0, 20.2 - 5, -14.56])
+        translate([-2, 20.2 - 5, -14.56])
           rotate(-9, [1, 0, 0])
-            cube([3, 44, .1], center = true);
+            cube([5, 44, .1], center = true);
         translate([0, 10 - 5, 60])
-          cube([3, 25, .1], center = true);
+          cube([4, 25, .1], center = true);
       }
         //Back plate attach
         hull()
@@ -3192,7 +3232,8 @@ module HopperPixelFunnel()
     //Conveyor side
     translate([(-(FunnelWidth + 3)/ 2), 0, 0])
     {
-      PixelFunnelSideSupport();
+      mirror([1, 0, 0])
+        PixelFunnelSideSupport();
     }
   }
 }
@@ -3417,6 +3458,107 @@ module ConveyorGuide()
   */
 }
 
+module FCRNeoVortexMountHolePair()
+{
+  translate([0, InchToMM(1)])  
+    circle(d = 5);
+  translate([0, InchToMM(-1)])  
+    circle(d = 5);
+}
+
+module FRCNeoVortexHoleSet()
+{
+//#  circle(d = InchToMM(FRCHorizontalLauncherRollerDiameter));
+  circle(d = InchToMM(HexFlangeBearingDiameter));
+  FCRNeoVortexMountHolePair();
+  rotate(45, [0, 0, 1])
+    FCRNeoVortexMountHolePair();
+  rotate(-45, [0, 0, 1])
+    FCRNeoVortexMountHolePair();
+}
+
+module FRCHorizontalLauncherPlateRollerPair(Spacing)
+{
+  translate([0, -Spacing / 2])
+    FRCNeoVortexHoleSet();
+  translate([0, Spacing / 2])
+    FRCNeoVortexHoleSet();
+}
+
+module FRCHorizontalLauncherPlate3D()
+{
+  translate([0, 0, -2.5])
+    linear_extrude(height = 5)
+    {
+      FRCHorizontalLauncherPlate2D();
+    }
+}
+
+module FRCHorizontalLauncherPlate2D()
+{
+  difference()
+  {
+    union()
+    {
+      translate([InchToMM(-1.75), 0, 0])
+        square([InchToMM(5.5), InchToMM(6.5)], center = true);
+      translate([InchToMM(17 + 2) / 2, 0])
+        square([InchToMM(17), InchToMM(3.5)], center = true);
+    }
+    //Note plate mount holes
+    for (i = [0 : 3])
+    {
+      translate([InchToMM(1.5 + (i * (15 / 3))), InchToMM(-1.5)])
+        circle(d = 5);
+    }
+    translate([InchToMM(1.5 + (0 * (15 / 3))), InchToMM(1.5)])
+      circle(d = 5);
+    translate([InchToMM(2.5 + (3 * (15 / 3))), InchToMM(1.5)])
+      circle(d = 5);
+    //Roller set options
+    for (i = [0 : 2])
+    {
+      translate([InchToMM(-i * FRCHorizontalLauncherRollerSetSpacing), 0])
+        FRCHorizontalLauncherPlateRollerPair(Spacing = InchToMM(1.75 - (i * .25)) + InchToMM(FRCHorizontalLauncherRollerDiameter));
+    }
+  }
+}
+
+module FRCHorizontalLauncher()
+{
+  TestPosition = 0;
+  translate([0, 0, InchToMM(FRCHorizontalLauncherRollerSpacing / 2)])
+    FRCHorizontalLauncherPlate3D();
+  translate([0, 0, InchToMM(-FRCHorizontalLauncherRollerSpacing / 2)])
+    FRCHorizontalLauncherPlate3D();
+  //Rollers
+  color("LightSkyBlue")
+  {
+    translate([InchToMM(-TestPosition * FRCHorizontalLauncherRollerSetSpacing), InchToMM(1.75 - (TestPosition * .25) + FRCHorizontalLauncherRollerDiameter) / 2, 0])
+      cylinder(d = InchToMM(FRCHorizontalLauncherRollerDiameter), h = InchToMM(FRCHorizontalLauncherRollerSpacing), center = true);
+    translate([InchToMM(-TestPosition * FRCHorizontalLauncherRollerSetSpacing), -InchToMM(1.75 - (TestPosition * .25) + FRCHorizontalLauncherRollerDiameter) / 2, 0])
+      cylinder(d = InchToMM(FRCHorizontalLauncherRollerDiameter), h = InchToMM(FRCHorizontalLauncherRollerSpacing), center = true);
+  }
+  //Churro
+  color("Silver")
+  {
+    for (i = [0 : 3])
+    {
+      translate([InchToMM(1.5 + (i * (15 / 3))), InchToMM(-1.5)])
+        cylinder(d = 15, h = InchToMM(FRCHorizontalLauncherRollerSpacing), center = true);
+    }
+    translate([InchToMM(1.5 + (0 * (15 / 3))), InchToMM(1.5)])
+      cylinder(d = 15, h = InchToMM(FRCHorizontalLauncherRollerSpacing), center = true);
+    translate([InchToMM(2.5 + (3 * (15 / 3))), InchToMM(1.5)])
+      cylinder(d = 15, h = InchToMM(FRCHorizontalLauncherRollerSpacing), center = true);
+  }
+  //Note plate
+  translate([InchToMM(17 + 2) / 2, InchToMM(-1.1), 0])
+    color([.7, .7, .7, .5])
+  cube([InchToMM(17), InchToMM(.25), InchToMM(FRCHorizontalLauncherRollerSpacing - 0.5)], center = true);
+}
+
+
 module RollerFlipper()
 {
   difference()
@@ -3571,13 +3713,13 @@ module PrintLinkages()
 {
   rotate(-90, [0, 1, 0])
   {
-    translate([0, 0, 12 * 0])
+/*    translate([0, 0, 12 * 0])
       Linkage(spacing = hopperlinkagebottomlength, width = 10, thickness = 6, holed = 4.2);
     translate([0, 0, 12 * 1])
       Linkage(spacing = hopperlinkagebottomlength, width = 10, thickness = 6, holed = 4.2);
     translate([0, 0, 12 * 2])
       Linkage(spacing = hopperlinkagetoplength, width = 10, thickness = 6, holed = 4.2);
-    translate([0, 0, 12 * 3])
+*/    translate([0, 0, 15 * 3])
       Linkage(spacing = hopperlinkagetoplength, width = 10, thickness = 6, holed = 4.2, servo = true);
   }
 }
@@ -3595,8 +3737,8 @@ module FunnelFix()
 
 module HopperPixelFunnelCurve()
 {
-  D = 280;
-  H = 12.8;
+  D = 210;
+  H = 17.8;
   W = 75;
   
   translate([0, 0, -(D / 2) + H])
@@ -3610,6 +3752,78 @@ module HopperPixelFunnelCurve()
     }
   }
 }
+
+
+module StairRailGuide1()
+{
+  difference()
+  {
+    union()
+    {
+      cylinder(d2 = 19.1, d1 = 19.3, h = 4, center = true, $fn = 100);
+      translate([0, 0, -4 / 2])
+      cylinder(d = 21, h = 0.4, , $fn = 100);
+    }
+    cylinder(d = 12.8 * sqrt(2), h = 4.1, center = true, $fn = 4);
+    translate([0, 0, -(4.01 - 0.4) / 2])
+    cylinder(d2 = 12.8 * sqrt(2), d1 = 13.2 * sqrt(2), h = 0.4, center = true, $fn = 4);
+  }
+}
+
+module StairRailGuide2()
+{
+  difference()
+  {
+    union()
+    {
+      cylinder(d2 = 19.1, d1 = 19.3, h = 4, center = true, $fn = 100);
+      translate([0, 0, -4 / 2])
+        cylinder(d = 21, h = 0.4, , $fn = 100);
+    }
+    cylinder(d = 12.8, h = 4.1, center = true, $fn = 100);
+    translate([0, 0, -(4.01 - 0.4) / 2])
+      cylinder(d2 = 12.8, d1 = 13.2, h = 0.4, center = true, $fn = 100);
+    cube([.3, 30, 30], center = true);
+  }
+}
+
+module StairRailGuide3($Height)
+{
+  $Spacing = 4.6;
+  $Len = 16.5;
+  
+  for (i = [-1:1])
+  {
+    translate([i*$Spacing, 0, 0])
+      cube([.4, $Len, $Height], center = true);
+    translate([0, i*$Spacing, 0])
+      cube([$Len, 0.4, $Height], center = true);
+  }
+}
+
+module StairRailCutJig()
+{
+  difference()
+  {
+    cube([80, 17, 17]);
+    translate([-3.5, 2, 2])
+      cube([80, 13, 17]);
+    translate([5.5, -1, 4])
+      cube([71, 20, 17]);
+  }
+}
+
+module StairRailShim()
+{
+  difference()
+  {
+    cube([20, 13, 2]);
+    translate([0, -1, 1.2])
+      rotate(-2.3, [0, 1, 0])
+        cube([25, 15, 5]);
+  }
+}
+
 
 //PixelFloorPickerO1Subsystem1();
 
@@ -3700,6 +3914,9 @@ module HopperPixelFunnelCurve()
 //RailSupportPlate();
 //FTCLifterSpindle($SpindleDiameter = 30, $SpindleLength = 25, $SpindleType = 1, $ShaftType = 1, $ShaftDiameter = 8 + 0.4, Splitter = true);
 //SpindleCore(InnerD = 20, OuterD = 24, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 8, ShaftFaces = 6, ThreadD = 3, Center = true, Cord = true);
+//SpindleCore(InnerD = 20, OuterD = 24, Height = $PixelFloorPickerO1SpindleHeight, RimHeight = .5, SlopeSpan = 1, ShaftD = 8, ShaftFaces = 6, ThreadD = 3, Center = false, Cord = false);
+//SpindleCore(InnerD = 20, OuterD = 24, Height = 6, RimHeight = 1.5, SlopeSpan = 1, ShaftD = 8, ShaftFaces = 6, ThreadD = 3, Center = false, Cord = false);
+//SpindleCore(InnerD = 20, OuterD = 30, Height = 8, RimHeight = 1.5, SlopeSpan = 2, ShaftD = 8, ShaftFaces = 6, ThreadD = 3, Center = false, Cord = false);
 
 //PixelFloorPickerO2(actuatorangle = -20, supportspacing = 120, position = 00, offset = 10, stages = 2);
 //PixelFloorPickerO2HopperArm(actuatorangle = -20, position = 0, offset = 10, stages = 2, width = 15);
@@ -3708,6 +3925,31 @@ module HopperPixelFunnelCurve()
 
 //HopperSubsystem();
 
+module RoundedBlockV2($XDim = 10, $YDim = 10, $ZDim = 10, $D1 = 0, $D2 = 0, $D3 = 0, $D4 = 0, $D5 = 0, $D6 = 0, $D7 = 0, $D8 = 0)
+{
+  $fn = 20;
+  hull()
+  {
+    translate([($XDim - $D1) / 2, ($YDim - $D1) / 2, ($ZDim - $D1)/ 2])
+      sphere(d = $D1);
+    translate([-($XDim - $D2) / 2, ($YDim - $D2) / 2, ($ZDim - $D2)/ 2])
+      sphere(d = $D2);
+    translate([-($XDim - $D3) / 2, -($YDim - $D3) / 2, ($ZDim - $D3)/ 2])
+      sphere(d = $D3);
+    translate([($XDim - $D4) / 2, -($YDim - $D4) / 2, ($ZDim - $D4)/ 2])
+      sphere(d = $D4);
+    
+    translate([($XDim - $D5) / 2, ($YDim - $D5) / 2, -($ZDim - $D5)/ 2])
+      sphere(d = $D5);
+    translate([-($XDim - $D6) / 2, ($YDim - $D6) / 2, -($ZDim - $D6)/ 2])
+      sphere(d = $D6);
+    translate([-($XDim - $D7) / 2, -($YDim - $D7) / 2, -($ZDim - $D7)/ 2])
+      sphere(d = $D7);
+    translate([($XDim - $D8) / 2, -($YDim - $D8) / 2, -($ZDim - $D8)/ 2])
+      sphere(d = $D8);
+    
+  }
+}
 
 if ($DisplaySelection == 0)
   FullRobotV2(supportspacing = 109, offset = 10, stages = 2, width = 12);
@@ -3729,7 +3971,7 @@ else if ($DisplaySelection == 20)
 else if ($DisplaySelection == 21)
   RevMount(orientation = RevMountOrientation, dual = RevMountDual);
 else if ($DisplaySelection == 22)
-  DroneLauncherPrint(Version = 2, ToPrint = 1);//15
+  DroneLauncherPrint(Version = 2, ToPrint = 8);//15
 else if ($DisplaySelection == 23)
   projection(cut = false)
     Hook();
@@ -3747,6 +3989,7 @@ else
 if (RobotShowBoundingBoxSmall)
   BoundingBox();
 
+
 //Extras
 /*
 translate([92, -120, 100])
@@ -3762,6 +4005,35 @@ FunnelFix();
 HopperPixelDiverter();
 HopperPixelFunnel();
 */
+//HopperPixelFunnel();
 
 
-HopperPixelFunnelCurve();
+//HopperPixelFunnelCurve();
+
+//FRCHorizontalLauncherPlate3D();
+
+//rotate(90, [1, 0, 0])
+//  FRCHorizontalLauncher();
+
+/*
+//Show note plate
+color("Green")
+  translate([InchToMM(1), InchToMM(-1.15)])
+    square([InchToMM(17), InchToMM(.25)]);
+*/
+//translate([45, -50, -8])
+//Pixel("red");
+
+//DualHopperBin();
+
+//PrintLinkages();
+
+
+//StairRailGuide1();
+//StairRailGuide2();
+//StairRailGuide3($Height = 5);
+//StairRailGuide3($Height = 8);
+//StairRailCutJig();
+//StairRailShim();
+
+
